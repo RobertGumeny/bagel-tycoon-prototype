@@ -8,6 +8,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed - 2026-02-01
+
+#### BUG-1: mergeWithDefaults Empty Stations Fix
+
+- Fixed `mergeWithDefaults()` method in BagelTycoonEngine to preserve default stations when partial state doesn't include them
+- Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization
+- Added 3 regression tests to prevent future occurrences
+- All 71 unit tests passing
+
+**Technical Details:**
+
+- Modified `mergeWithDefaults()` to check if `partial.stations` exists before attempting conversion
+- Falls back to `defaults.stations` when partial state omits stations property
+- Prevents empty Map from overwriting properly initialized default stations
+
 ### Added - 2026-02-01
 
 #### BT-001: Type Definitions & Core Constants
