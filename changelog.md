@@ -134,3 +134,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ✅ Active orders count down correctly
 - ✅ Auto-save triggers every 5 seconds
 - ✅ State persists and loads from localStorage
+
+#### BT-004: Unit Tests for Engine Core
+
+- Set up Vitest testing framework with happy-dom environment
+- Created comprehensive test suite (`src/engine/BagelTycoonEngine.test.ts`) with 68 tests
+- Test coverage includes:
+  - Singleton pattern (getInstance, resetInstance)
+  - Observable pattern (subscribe, unsubscribe, notify, getState)
+  - State initialization (default state, free stations, station configs)
+  - Station unlocking (validation, costs, default ingredients)
+  - Station upgrades (equipment, quality, storage with cost formulas)
+  - Manager hiring (validation, one-time purchase)
+  - Ingredient unlocking (sequence, storage limits)
+  - Automation (register manager, second register)
+  - Order management (queue, takeOrder, FIFO behavior)
+  - Persistence (save to localStorage, load, hydration)
+  - Cost calculations (exponential upgrade formulas, linear storage costs)
+- Added test scripts to package.json (test, test:watch, test:ui)
+- Configured Vitest in vite.config.ts
+
+**Technical Details:**
+
+- All 68 tests passing
+- Helper functions for test state setup (createEngineWithMoney, createEngineWithQueue, getStations)
+- Type-safe test code with proper handling of Map/object serialization
+- Tests use reflection to access protected methods for state setup
+- ESLint compliant with proper disable comments for intentional any types
+
+**Testing:**
+
+- ✅ All 68 unit tests passing
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Build successful (193.91 KB bundle)
+- ✅ Test coverage for all implemented engine features
