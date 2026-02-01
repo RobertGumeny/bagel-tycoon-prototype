@@ -11,7 +11,7 @@ epics:
           - "Create a STATION_CONFIGS constant mapping all 6 stations to their unlock costs."
           - "Implement STORAGE_CAPS constant for levels 1-3 (3, 5, 8 ingredients)."
           - "Export formula constants: 1.6x multiplier for upgrades and 0.12x for quality."
-        status: TODO
+        status: DONE
 
       - id: BT-002
         title: "Engine Class & Observable Pattern"
