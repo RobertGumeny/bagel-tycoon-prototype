@@ -90,3 +90,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ✅ Build successful (193.91 KB bundle)
 - ✅ All public API methods properly typed and callable
 - ✅ Observable pattern functional (subscribe/unsubscribe/notify)
+
+#### BT-003: 100ms Tick & Persistence
+
+- Implemented game loop management:
+  - `start()` - Initialize setInterval at 100ms for continuous game updates
+  - `stop()` - Stop game loop and trigger save
+  - `tick(deltaTime)` - Core update function called every 100ms
+  - Automatic start on engine instantiation
+  - Proper cleanup on instance reset
+- Implemented active order countdown:
+  - Decrement `activeOrder.remainingTime` by deltaTime each tick
+  - Auto-complete order when remainingTime reaches 0
+  - `completeOrder()` - Placeholder implementation (full pricing in BT-007)
+- Implemented localStorage persistence:
+  - `save()` - Serialize state to localStorage with Map handling
+  - `load()` - Deserialize state from localStorage with validation
+  - `clearSave()` - Remove saved game data
+  - Auto-save triggered every 5 seconds during game loop
+  - Auto-save on page unload (beforeunload event)
+  - Automatic state hydration on getInstance() if no initial state provided
+- Game loop features:
+  - Delta time calculation using `performance.now()` for accuracy
+  - State notifications to subscribers every tick
+  - Error handling for localStorage quota exceeded
+  - Console logging for save/load operations
+
+**Technical Details:**
+
+- Game loop runs at exactly 100ms intervals via `setInterval`
+- Delta time converted from milliseconds to seconds for game logic
+- Map serialization/deserialization for stations in save/load
+- Proper TypeScript typing for interval IDs (platform-agnostic)
+- Browser API checks (`typeof window !== 'undefined'`) for SSR compatibility
+- Auto-save tracked via `state.lastSave` timestamp
+
+**Testing:**
+
+- ✅ TypeScript compilation successful with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Build successful (193.91 KB bundle)
+- ✅ Game loop starts automatically on instantiation
+- ✅ Active orders count down correctly
+- ✅ Auto-save triggers every 5 seconds
+- ✅ State persists and loads from localStorage
