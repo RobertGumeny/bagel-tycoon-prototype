@@ -2,11 +2,44 @@
 
 **Reported by:** Claude Sonnet 4.5
 **Date:** 2026-02-01
+**Fixed Date:** 2026-02-01
 **Severity:** Medium
-**Status:** Documented (Not Fixed)
+**Status:** ✅ FIXED
 **Affected File:** `src/engine/BagelTycoonEngine.ts`
 **Affected Method:** `mergeWithDefaults()`
 **Related Task:** BT-004 (Unit Tests for Engine Core)
+**Fix Branch:** `fix/BUG-1-mergeWithDefaults-empty-stations`
+
+---
+
+## ✅ Fix Summary
+
+**Implementation:** Option 1 (Use Default Stations When Partial Has None)
+
+**Changes Made:**
+1. Modified `mergeWithDefaults()` in `src/engine/BagelTycoonEngine.ts` (lines 172-185)
+2. Added conditional check: only convert `partial.stations` if it exists, otherwise use `defaults.stations`
+3. Added 3 regression tests in `src/engine/BagelTycoonEngine.test.ts`
+
+**Test Results:**
+- ✅ All 71 unit tests passing
+- ✅ Regression tests verify partial state initialization works correctly
+- ✅ No breaking changes to existing functionality
+
+**Code Change:**
+```typescript
+// Before (buggy):
+const stations = partial.stations instanceof Map
+  ? partial.stations
+  : new Map(Object.entries(partial.stations || {}) as [string, StationState][]);
+
+// After (fixed):
+const stations = partial.stations
+  ? (partial.stations instanceof Map
+      ? partial.stations
+      : new Map(Object.entries(partial.stations) as [string, StationState][]))
+  : defaults.stations;
+```
 
 ---
 

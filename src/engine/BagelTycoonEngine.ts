@@ -172,10 +172,12 @@ export class BagelTycoonEngine {
   private mergeWithDefaults(partial: Partial<GameState>): GameState {
     const defaults = this.initializeDefaultState();
 
-    // Convert stations object back to Map if needed
-    const stations = partial.stations instanceof Map
-      ? partial.stations
-      : new Map(Object.entries(partial.stations || {}) as [string, StationState][]);
+    // Only convert if partial.stations exists, otherwise use defaults
+    const stations = partial.stations
+      ? (partial.stations instanceof Map
+          ? partial.stations
+          : new Map(Object.entries(partial.stations) as [string, StationState][]))
+      : defaults.stations;
 
     return {
       ...defaults,

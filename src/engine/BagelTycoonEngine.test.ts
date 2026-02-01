@@ -227,6 +227,50 @@ describe('BagelTycoonEngine', () => {
         expect(station.hasManager).toBe(false);
       });
     });
+
+    // Regression test for BUG-1: mergeWithDefaults should preserve default stations when partial state doesn't include them
+    it('should initialize default stations when creating instance with partial state (money only)', () => {
+      BagelTycoonEngine.resetInstance();
+      const engine = BagelTycoonEngine.getInstance({ money: 1000 });
+      const state = engine.getState();
+
+      // Should have all 6 stations initialized from defaults
+      expect(Object.keys(state.stations)).toHaveLength(6);
+
+      // Should preserve the partial state property
+      expect(state.money).toBe(1000);
+
+      // Stations should be properly initialized and usable
+      Object.keys(STATION_CONFIGS).forEach(stationId => {
+        expect(getStations(state)[stationId]).toBeDefined();
+      });
+    });
+
+    it('should initialize default stations when creating instance with partial state (custom queue)', () => {
+      BagelTycoonEngine.resetInstance();
+      const engine = BagelTycoonEngine.getInstance({
+        customerQueue: ['😀', '😎']
+      });
+      const state = engine.getState();
+
+      // Should have all 6 stations initialized from defaults
+      expect(Object.keys(state.stations)).toHaveLength(6);
+
+      // Should preserve the partial state property
+      expect(state.customerQueue).toEqual(['😀', '😎']);
+    });
+
+    it('should preserve full state when all properties are provided', () => {
+      BagelTycoonEngine.resetInstance();
+      const defaultEngine = BagelTycoonEngine.getInstance();
+      const fullState = defaultEngine.getState();
+
+      BagelTycoonEngine.resetInstance();
+      const engine = BagelTycoonEngine.getInstance(fullState);
+
+      // Should match the full state exactly
+      expect(engine.getState()).toEqual(fullState);
+    });
   });
 
   // ============================================================================
