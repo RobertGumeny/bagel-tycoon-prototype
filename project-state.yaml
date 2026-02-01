@@ -3,6 +3,6 @@ version: 0.1.0
 current_epic: "EPIC-1: Game Engine Architecture"
 last_update: "2026-02-01"
 technical_stack: ["React", "TypeScript", "Vite", "Tailwind", "Lucide React"]
-active_systems: ["Type System", "Game Constants"]
+active_systems: ["Type System", "Game Constants", "Engine Core", "Observable Pattern"]
 known_issues: []
-memo_from_last_run: "BT-001 completed: Core type definitions and constants established in src/engine/types.ts. All 6 stations configured, storage caps defined, and formula constants exported."
+memo_from_last_run: "BT-002 completed: BagelTycoonEngine class implemented with singleton pattern, observable subscriptions, and full public API for station management, upgrades, automation, and order handling. Engine is fully decoupled from React/DOM."

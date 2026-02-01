@@ -44,3 +44,49 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ✅ TypeScript compilation successful
 - ✅ ESLint passes with no warnings
 - ✅ Build successful (193.91 KB bundle)
+
+#### BT-002: Engine Class & Observable Pattern
+
+- Created `src/engine/BagelTycoonEngine.ts` - Core game logic engine
+- Implemented singleton pattern:
+  - `getInstance()` - Get or create singleton instance
+  - `resetInstance()` - Reset for testing purposes
+  - Private constructor with optional initial state for save loading
+- Implemented observable pattern:
+  - `subscribe(callback)` - Register state change listeners, returns unsubscribe function
+  - `notify()` - Broadcast state updates to all subscribers
+  - `getState()` - Get read-only deep clone of current state
+- Station management API:
+  - `unlockStation(id)` - Purchase and unlock stations with validation
+  - `upgradeStation(id, type)` - Upgrade equipment, quality, or storage
+  - `hireManager(id)` - Hire station manager for parallel processing
+  - `addIngredient(id)` - Unlock next ingredient in station's sequence
+- Automation API:
+  - `automateRegister()` - Purchase register manager
+  - `addSecondRegister()` - Purchase second register slot
+- Order management API:
+  - `takeOrder()` - Shift customer from queue to active order
+  - Placeholder order generation (full implementation in BT-005)
+- Future-ready stubs:
+  - `tick(deltaTime)` - Game loop implementation in BT-003
+  - `prestige()` - Prestige system for later epic
+- Protected helper methods:
+  - `addMoney()` - For order completion in BT-007
+  - `addSaleToHistory()` - For sales tracking in BT-007
+  - `getRandomCustomer()` - For customer spawning in BT-004
+
+**Technical Details:**
+
+- Zero dependencies on React, DOM, or browser APIs
+- Full input validation with informative console warnings
+- Type-safe with strict TypeScript compilation
+- All state mutations trigger subscriber notifications
+- Deep cloning prevents external state mutation
+
+**Testing:**
+
+- ✅ TypeScript compilation successful with no errors
+- ✅ ESLint passes with no warnings
+- ✅ Build successful (193.91 KB bundle)
+- ✅ All public API methods properly typed and callable
+- ✅ Observable pattern functional (subscribe/unsubscribe/notify)

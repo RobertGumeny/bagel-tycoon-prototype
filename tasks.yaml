@@ -21,7 +21,7 @@ epics:
           - "Create a subscribe() method and a private notify() system for state updates."
           - "Add public methods for takeOrder(), unlockStation(), and upgradeStation()."
           - "Zero dependencies on DOM or React-specific hooks/state."
-        status: TODO
+        status: DONE
 
       - id: BT-003
         title: "100ms Tick & Persistence"
