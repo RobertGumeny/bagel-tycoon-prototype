@@ -8,6 +8,6 @@ IMPLEMENT: Execute the code according to your proposed plan. If there are any qu
 
 REPORT:
 
-- IF successful: Update project-state.yaml, mark task as DONE in tasks.yaml, and add entry to changelog.md.
+- IF successful: Update project-state.yaml, mark task as DONE in tasks.yaml, and add entry to changelog.md. Keep the changelog items high level and do not include excessive details (exact stats, etc).
 
 - IF failed (Maximum 5 attempts): Revert changes using Git and generate a FAILURE_REPORT.md explicitly outlining the task and epic that failed, your proposed plan and what you tried, and your assessment of why it is failing.
