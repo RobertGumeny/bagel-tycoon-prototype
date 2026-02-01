@@ -40,6 +40,7 @@ epics:
           - "Test customer spawning logic and queue management."
           - "Validate upgrade cost calculations and station unlocks."
           - "Ensure state persistence and hydration works as expected."
+        status: DONE
 
   - id: EPIC-2
     title: "Core Simulation & Logic"

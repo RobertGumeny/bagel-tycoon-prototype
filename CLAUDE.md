@@ -1,6 +1,10 @@
 AGENT INSTRUCTIONS:
 
-RESEARCH: Read bagel-tycoon-prd.md, project-state.yaml, and tasks.yaml. Identify the highest priority task from the EPIC in progress, or next EPIC in the backlog, that is not blocked. Create a new branch named after the epic you are working on (feature/BT-01) or the bugfix we are working on (fix/BUG-1). As soon as you create the new branch, pull from main to ensure we are up-to-date.
+RESEARCH:
+
+FOR FEATURES: Read bagel-tycoon-prd.md, project-state.yaml, and tasks.yaml. Identify the highest priority task from the EPIC in progress, or next EPIC in the backlog, that is not blocked. Create a new branch named after the epic you are working on (feature/BT-01). As soon as you create the new branch, pull from main to ensure we are up-to-date.
+
+FOR BUGFIXES: Read BUG_REPORT.md and reference project-state.yml or tasks.yml for more information about the task impacted by the bug. Create a new branch named after the bugfix we are working on (fix/BUG-1). As soon as you create the new branch, pull from main to ensure we are up-to-date.
 
 PLAN: If anything is unclear from your research step, ask clarifying questions before proceeding with the PLAN phase. Propose exactly how you will implement this task and list the files you will create or modify. Use this plan to guide you during the IMPLEMENT phase. You DO NOT need to get final permission to execute the plan if you do not have any clarifying questions.
 
@@ -11,3 +15,5 @@ REPORT:
 - IF successful: Update project-state.yaml, mark task as DONE in tasks.yaml, and add entry to changelog.md. Keep the changelog items high level and do not include excessive details (exact stats, etc).
 
 - IF failed (Maximum 5 attempts): Revert changes using Git and generate a FAILURE_REPORT.md explicitly outlining the task and epic that failed, your proposed plan and what you tried, and your assessment of why it is failing.
+
+- IF you encounter any bugs that directly impact your ability to complete a task, stop and generate a BUG_REPORT.md outlining what the bug was, where it was encountered, your assessment of the best fix, the impacted task, and any files that were impacted by the bug.

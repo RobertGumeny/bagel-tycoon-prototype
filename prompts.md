@@ -9,11 +9,15 @@ Success Criteria:
 - No linter errors, build errors, or warnings
 - Documentation and changelog updated
 
+After 5 iterations without a successful implementation:
+
+- Generate a FAILURE_REPORT.md
+
 ALWAYS REMEMBER TO REPORT ALL FAILURES. Let me know if you have any questions before we begin.
 
 # Bug Fix
 
-Fix the bug referenced in [Bug Ticket].
+Fix the bug referenced in BUG_REPORT.md
 
 Steps:
 
