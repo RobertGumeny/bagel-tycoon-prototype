@@ -5,15 +5,32 @@ epics:
     tasks:
       - id: BT-001
         title: "Type Definitions & Core Constants"
-        description: "Translate 'Stations' and 'Recipes' tables from PRD into TypeScript interfaces. Include all cost, time, and upgrade formulas from the Appendix."
+        description: "Establish the type-safe foundation for the shop simulation. Reference PRD for specific station names/costs."
+        requirements:
+          - "Define interfaces for GameState, StationState, Recipe, and Order."
+          - "Create a STATION_CONFIGS constant mapping all 6 stations to their unlock costs."
+          - "Implement STORAGE_CAPS constant for levels 1-3 (3, 5, 8 ingredients)."
+          - "Export formula constants: 1.6x multiplier for upgrades and 0.12x for quality."
         status: TODO
+
       - id: BT-002
         title: "Engine Class & Observable Pattern"
-        description: "Build the singleton BagelTycoonEngine. Implement the 'subscribe' pattern to notify the UI of state changes, maintaining strict decoupling."
+        description: "Build the logic core. Ensure strict decoupling from React."
+        requirements:
+          - "Implement a singleton BagelTycoonEngine class."
+          - "Create a subscribe() method and a private notify() system for state updates."
+          - "Add public methods for takeOrder(), unlockStation(), and upgradeStation()."
+          - "Zero dependencies on DOM or React-specific hooks/state."
         status: TODO
+
       - id: BT-003
         title: "100ms Tick & Persistence"
-        description: "Implement the 100ms game loop and localStorage save/load logic. Ensure the loop handles resource accumulation and timer countdowns."
+        description: "Manage the passage of time and data safety."
+        requirements:
+          - "Implement an internal setInterval running at 100ms for logic updates."
+          - "Implement auto-save logic to localStorage every 5 seconds."
+          - "Ensure the Engine hydrates its state from localStorage on instantiation."
+          - "Tick down activeOrder.remainingTime and emit updates every tick."
         status: TODO
 
   - id: EPIC-2
@@ -22,27 +39,38 @@ epics:
     tasks:
       - id: BT-004
         title: "Customer Queue & Spawning"
-        description: "Implement customer arrival logic: 1 customer every 5 seconds, max 5 total. Reference the 'Core Game Loop' section."
+        description: "Simulate shop traffic flow."
+        requirements:
+          - "Spawn one customer every 5 seconds if the queue length is < 5."
+          - "Store queue as an array of unique emoji-based customer IDs."
+          - "Implement takeOrder() to shift from queue to activeOrder state."
         status: TODO
+
       - id: BT-005
         title: "Dynamic Order Generation"
-        description: "Create the recipe filter. Orders must only include items where stations and ingredients are unlocked. Follow the 60% beverage chance logic."
+        description: "Build orders based on current shop capabilities."
+        requirements:
+          - "Filter Recipes by 'unlocked' status of both Stations and Ingredients."
+          - "Implement 60% probability check for adding a beverage to any food order."
+          - "Calculate totalBaseTime as the sum of all components in the order."
         status: TODO
+
       - id: BT-006
         title: "Processing Logic (Parallel vs. Series)"
-        description: "Implement the station timing logic. Without managers, stations process in series (sum). With managers, process in parallel (max)."
+        description: "Apply station efficiency and manager automation logic."
+        requirements:
+          - "Apply speed multiplier: baseTime / (1 + (level - 1) * 0.25)."
+          - "If all stations in order have managers: process in parallel (use max station time)."
+          - "If any station lacks a manager: process in series (use sum of station times)."
         status: TODO
+
       - id: BT-007
         title: "Pricing & Speed Bonus Logic"
-        description: "Strictly implement the finalPrice formula including Quality Multipliers and the three-tier Speed Bonus from the Appendix."
-        status: TODO
-      - id: BT-008
-        title: "Shop Management Methods"
-        description: "Implement engine methods for unlockStation, hireManager, and addIngredient, validating money and storage levels (3/5/8)."
-        status: TODO
-      - id: BT-009
-        title: "Prestige System & Starter Perks"
-        description: "Implement the $10,000 reset trigger and apply the +10% income bonus. Create a draft of 5-7 perks from the PRD examples."
+        description: "Calculate final payout based on performance."
+        requirements:
+          - "Sum qualityMultiplier: 1 + total of ((stationQuality - 1) * 0.12)."
+          - "Calculate speedBonus: 1.5x (<50% time), 1.2x (<100%), 1.0x (normal), 0.7x (slow)."
+          - "Log completed sales to salesHistory with bonus label and final dollar amount."
         status: TODO
 
   - id: EPIC-3
@@ -51,20 +79,28 @@ epics:
     tasks:
       - id: BT-010
         title: "POS Layout & Shell"
-        description: "Implement the 2-column grid and Header. Include the random tagline selector from the pool in the 'Header' section."
+        description: "Build the visual container."
+        requirements:
+          - "2-column layout (Sidebar: 33%, Main: 66%) using Tailwind CSS."
+          - "Header component displaying Logo and real-time Money counter."
+          - "Implement random tagline rotation from the PRD pool on every mount."
         status: TODO
+
       - id: BT-011
         title: "Active Order & Queue UI"
-        description: "Render the emoji queue and the high-contrast active order display with the animated progress bar and countdown timer."
+        description: "Visualize shop activity."
+        requirements:
+          - "Render 5 slots for CustomerQueue using emoji avatars."
+          - "ActiveOrder displays order name, countdown timer, and a progress bar."
+          - "Progress bar must fill smoothly based on 100ms engine updates."
         status: TODO
+
       - id: BT-012
-        title: "Station Grid & Cards"
-        description: "Build the 2x3 grid. Apply the specific color palette for each station (e.g., Orange for Bagel Case, Blue for Cooler)."
+        title: "Station Grid & Modals"
+        description: "Build the management interface."
+        requirements:
+          - "Render 2x3 grid of color-coded station cards using PRD palette."
+          - "StationModal includes 2 columns: Equipment upgrades and Quality upgrades."
+          - "Display 'Ingredient Tags' and a button to unlock the next ingredient in sequence."
+          - "Hide upgrade buttons if player lacks sufficient funds."
         status: TODO
-      - id: BT-013
-        title: "Station Upgrade Modal"
-        description: "Create the 2-column modal for Equipment/Quality upgrades and Ingredient management. Add the 'Hire Manager' section."
-        status: TODO
-      - id: BT-014
-        title: "Sales Ledger Component"
-        description: "Implement the white card history feed showing the last 5 sales with
