@@ -1,6 +1,6 @@
 # Feature Implementation:
 
-Implement the next task for [EPIC NAME]. Each task (e.g. BT-001) will have a list of requirements and a description.
+Please implement the next task for [EPIC NAME]. Each task (e.g. BT-001) will have a list of requirements and a description.
 
 Success Criteria:
 
