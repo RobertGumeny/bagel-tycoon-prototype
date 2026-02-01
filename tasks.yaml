@@ -46,7 +46,7 @@ epics:
     title: "Core Simulation & Logic"
     status: TODO
     tasks:
-      - id: BT-004
+      - id: BT-005
         title: "Customer Queue & Spawning"
         description: "Simulate shop traffic flow."
         requirements:
@@ -55,7 +55,7 @@ epics:
           - "Implement takeOrder() to shift from queue to activeOrder state."
         status: TODO
 
-      - id: BT-005
+      - id: BT-006
         title: "Dynamic Order Generation"
         description: "Build orders based on current shop capabilities."
         requirements:
@@ -64,7 +64,7 @@ epics:
           - "Calculate totalBaseTime as the sum of all components in the order."
         status: TODO
 
-      - id: BT-006
+      - id: BT-007
         title: "Processing Logic (Parallel vs. Series)"
         description: "Apply station efficiency and manager automation logic."
         requirements:
@@ -73,7 +73,7 @@ epics:
           - "If any station lacks a manager: process in series (use sum of station times)."
         status: TODO
 
-      - id: BT-007
+      - id: BT-008
         title: "Pricing & Speed Bonus Logic"
         description: "Calculate final payout based on performance."
         requirements:
@@ -86,7 +86,7 @@ epics:
     title: "React UI Layer (POS Style)"
     status: TODO
     tasks:
-      - id: BT-010
+      - id: BT-009
         title: "POS Layout & Shell"
         description: "Build the visual container."
         requirements:
@@ -95,7 +95,7 @@ epics:
           - "Implement random tagline rotation from the PRD pool on every mount."
         status: TODO
 
-      - id: BT-011
+      - id: BT-010
         title: "Active Order & Queue UI"
         description: "Visualize shop activity."
         requirements:
@@ -104,7 +104,7 @@ epics:
           - "Progress bar must fill smoothly based on 100ms engine updates."
         status: TODO
 
-      - id: BT-012
+      - id: BT-011
         title: "Station Grid & Modals"
         description: "Build the management interface."
         requirements:
