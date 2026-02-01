@@ -72,7 +72,7 @@ epics:
           - "Apply speed multiplier: baseTime / (1 + (level - 1) * 0.25)."
           - "If all stations in order have managers: process in parallel (use max station time)."
           - "If any station lacks a manager: process in series (use sum of station times)."
-        status: TODO
+        status: DONE
 
       - id: BT-008
         title: "Pricing & Speed Bonus Logic"

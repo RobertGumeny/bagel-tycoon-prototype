@@ -1,6 +1,6 @@
 /**
  * BagelTycoonEngine - Core game logic engine
- * Tasks: BT-002, BT-003
+ * Tasks: BT-002, BT-003, BT-007
  *
  * Singleton class that manages all game state and logic.
  * Completely decoupled from React/DOM for maximum testability and reusability.
@@ -11,6 +11,7 @@ import type {
   StationState,
   Order,
   SaleRecord,
+  Recipe,
 } from './types';
 
 import {
@@ -21,6 +22,7 @@ import {
   CUSTOMER_EMOJIS,
   TIMING,
   RECIPES,
+  SPEED_MULTIPLIER,
 } from './types';
 
 /**
@@ -645,9 +647,6 @@ export class BagelTycoonEngine {
       }
     }
 
-    // Calculate total base time (sum of food + beverage times)
-    const totalTime = foodRecipe.baseTime + (beverageRecipe?.baseTime ?? 0);
-
     // Get all unique stations involved
     const stationsInvolved = [
       ...new Set([
@@ -655,6 +654,9 @@ export class BagelTycoonEngine {
         ...(beverageRecipe?.requiredStations ?? []),
       ]),
     ];
+
+    // Calculate processing time with speed multipliers and parallel/series logic (BT-007)
+    const totalTime = this.calculateOrderProcessingTime(foodRecipe, beverageRecipe);
 
     // Create order with unique ID
     this.orderCounter++;
@@ -670,6 +672,73 @@ export class BagelTycoonEngine {
     };
 
     return order;
+  }
+
+  /**
+   * Calculate order processing time with speed multipliers and parallel/series logic
+   * BT-007: Processing Logic
+   *
+   * The baseTime represents the total time to complete the entire order.
+   * Each station's contribution is: baseTime / speedMultiplier
+   * For multi-station orders:
+   * - PARALLEL (all managers): max time among stations
+   * - SERIES (any without manager): sum of all station times
+   *
+   * @param foodRecipe The food recipe in the order
+   * @param beverageRecipe Optional beverage recipe in the order
+   * @returns Total processing time in seconds
+   */
+  private calculateOrderProcessingTime(
+    foodRecipe: Recipe,
+    beverageRecipe?: Recipe
+  ): number {
+    // Calculate processing time for the food recipe at each station
+    const foodStationTimes: number[] = foodRecipe.requiredStations.map(stationId => {
+      const station = this.state.stations.get(stationId);
+      if (!station) return foodRecipe.baseTime;
+
+      // Apply speed multiplier: baseTime / (1 + (level - 1) * 0.25)
+      const speedMultiplier = 1 + (station.equipmentLevel - 1) * SPEED_MULTIPLIER;
+      return foodRecipe.baseTime / speedMultiplier;
+    });
+
+    // Calculate processing time for the beverage recipe if present
+    let beverageStationTimes: number[] = [];
+    if (beverageRecipe) {
+      beverageStationTimes = beverageRecipe.requiredStations.map(stationId => {
+        const station = this.state.stations.get(stationId);
+        if (!station) return beverageRecipe.baseTime;
+
+        // Apply speed multiplier
+        const speedMultiplier = 1 + (station.equipmentLevel - 1) * SPEED_MULTIPLIER;
+        return beverageRecipe.baseTime / speedMultiplier;
+      });
+    }
+
+    // Get all unique stations involved in the entire order
+    const allStations = [
+      ...new Set([
+        ...foodRecipe.requiredStations,
+        ...(beverageRecipe?.requiredStations ?? []),
+      ]),
+    ];
+
+    // Check if all stations have managers
+    const allHaveManagers = allStations.every(stationId => {
+      const station = this.state.stations.get(stationId);
+      return station?.hasManager ?? false;
+    });
+
+    // Calculate total time based on parallel vs. series processing
+    if (allHaveManagers) {
+      // PARALLEL: All stations work simultaneously, use maximum time
+      const allTimes = [...foodStationTimes, ...beverageStationTimes];
+      return Math.max(...allTimes);
+    } else {
+      // SERIES: Stations work sequentially, sum all times
+      const allTimes = [...foodStationTimes, ...beverageStationTimes];
+      return allTimes.reduce((sum, time) => sum + time, 0);
+    }
   }
 
   /**

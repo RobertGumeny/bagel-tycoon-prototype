@@ -1217,7 +1217,7 @@ describe('BagelTycoonEngine', () => {
       expect(order?.beverageRecipe).toBeUndefined();
     });
 
-    it('should calculate totalTime as sum of food and beverage times', () => {
+    it('should calculate totalTime with processing logic for food and beverage orders', () => {
       const engine = createEngineWithMoney(1000);
 
       // Unlock beverages station
@@ -1245,12 +1245,20 @@ describe('BagelTycoonEngine', () => {
       expect(orderWithBeverage).not.toBeNull();
 
       if (orderWithBeverage) {
-        const expectedTime =
-          orderWithBeverage.foodRecipe.baseTime +
-          (orderWithBeverage.beverageRecipe?.baseTime ?? 0);
+        // With BT-007 processing logic, time includes speed multipliers and series processing
+        // Since no managers are hired, processing is in series (sum of all station times)
+        const foodBaseTime = orderWithBeverage.foodRecipe.baseTime;
+        const beverageBaseTime = orderWithBeverage.beverageRecipe?.baseTime ?? 0;
+        const foodStationCount = orderWithBeverage.foodRecipe.requiredStations.length;
+        const beverageStationCount = orderWithBeverage.beverageRecipe?.requiredStations.length ?? 0;
 
-        expect(orderWithBeverage.totalTime).toBe(expectedTime);
-        expect(orderWithBeverage.remainingTime).toBe(expectedTime);
+        // With all equipment at level 1 (speed multiplier = 1.0) and series processing:
+        // Each station processes for baseTime / 1.0 = baseTime
+        // Total = sum of all station times
+        const expectedTime = foodBaseTime * foodStationCount + beverageBaseTime * beverageStationCount;
+
+        expect(orderWithBeverage.totalTime).toBeCloseTo(expectedTime, 1);
+        expect(orderWithBeverage.remainingTime).toBeCloseTo(expectedTime, 1);
       }
     });
 
@@ -1264,8 +1272,19 @@ describe('BagelTycoonEngine', () => {
       const order = state.activeOrder;
 
       expect(order).not.toBeNull();
-      expect(order?.totalTime).toBe(order?.foodRecipe.baseTime);
-      expect(order?.remainingTime).toBe(order?.foodRecipe.baseTime);
+
+      if (order) {
+        // With BT-007 processing logic, time accounts for all stations
+        // Since no managers are hired, processing is in series
+        // With all equipment at level 1 (speed multiplier = 1.0):
+        // Each station processes for baseTime / 1.0 = baseTime
+        const baseTime = order.foodRecipe.baseTime;
+        const stationCount = order.foodRecipe.requiredStations.length;
+        const expectedTime = baseTime * stationCount;
+
+        expect(order.totalTime).toBeCloseTo(expectedTime, 1);
+        expect(order.remainingTime).toBeCloseTo(expectedTime, 1);
+      }
     });
 
     it('should include all unique stations in stationsInvolved', () => {
@@ -1360,6 +1379,416 @@ describe('BagelTycoonEngine', () => {
 
       const state = engine.getState();
       expect(state.activeOrder?.customerName).toBe(testEmoji);
+    });
+  });
+
+  // ============================================================================
+  // Processing Logic Tests (BT-007)
+  // ============================================================================
+
+  describe('Processing Logic - Speed Multipliers (BT-007)', () => {
+    it('should apply speed multiplier to reduce processing time', () => {
+      const engine = createEngineWithMoney(1000);
+
+      // Lock cooler to ensure single-station recipes
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.stations.get('cooler').unlocked = false;
+
+      // Upgrade bagelCase equipment to level 2
+      engine.upgradeStation('bagelCase', 'equipment');
+
+      // Add customer and take order
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order) {
+        const baseTime = order.foodRecipe.baseTime;
+        // Speed multiplier for level 2: 1 + (2 - 1) * 0.25 = 1.25
+        // Expected time: baseTime / 1.25
+        const expectedTime = baseTime / 1.25;
+
+        expect(order.totalTime).toBeCloseTo(expectedTime, 1);
+      }
+    });
+
+    it('should apply different speed multipliers for different equipment levels', () => {
+      const testCases = [
+        { level: 1, multiplier: 1.0 },   // 1 + (1-1) * 0.25 = 1.0
+        { level: 2, multiplier: 1.25 },  // 1 + (2-1) * 0.25 = 1.25
+        { level: 3, multiplier: 1.5 },   // 1 + (3-1) * 0.25 = 1.5
+        { level: 5, multiplier: 2.0 },   // 1 + (5-1) * 0.25 = 2.0
+      ];
+
+      testCases.forEach(({ level, multiplier }) => {
+        BagelTycoonEngine.resetInstance();
+
+        // Create engine with only bagelCase unlocked
+        const initialState = {
+          money: 100000,
+          stations: new Map([
+            ['bagelCase', {
+              id: 'bagelCase',
+              unlocked: true,
+              equipmentLevel: 1,
+              qualityLevel: 1,
+              storageLevel: 1,
+              hasManager: false,
+              unlockedIngredients: ['plainBagel'],
+            }],
+            ['cooler', {
+              id: 'cooler',
+              unlocked: false,  // Keep cooler locked
+              equipmentLevel: 1,
+              qualityLevel: 1,
+              storageLevel: 1,
+              hasManager: false,
+              unlockedIngredients: [],
+            }],
+            ['beverages', {
+              id: 'beverages',
+              unlocked: false,
+              equipmentLevel: 1,
+              qualityLevel: 1,
+              storageLevel: 1,
+              hasManager: false,
+              unlockedIngredients: [],
+            }],
+            ['slicer', {
+              id: 'slicer',
+              unlocked: false,
+              equipmentLevel: 1,
+              qualityLevel: 1,
+              storageLevel: 1,
+              hasManager: false,
+              unlockedIngredients: [],
+            }],
+            ['griddle', {
+              id: 'griddle',
+              unlocked: false,
+              equipmentLevel: 1,
+              qualityLevel: 1,
+              storageLevel: 1,
+              hasManager: false,
+              unlockedIngredients: [],
+            }],
+            ['fryer', {
+              id: 'fryer',
+              unlocked: false,
+              equipmentLevel: 1,
+              qualityLevel: 1,
+              storageLevel: 1,
+              hasManager: false,
+              unlockedIngredients: [],
+            }],
+          ]),
+        };
+        const engine = BagelTycoonEngine.getInstance(initialState as any);
+
+        // Upgrade bagelCase to target level
+        for (let i = 1; i < level; i++) {
+          const success = engine.upgradeStation('bagelCase', 'equipment');
+          expect(success).toBe(true);
+        }
+
+        // Verify equipment level
+        const state = engine.getState();
+        expect(getStations(state).bagelCase.equipmentLevel).toBe(level);
+
+        // Add customer and take order
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        const orderTaken = engine.takeOrder();
+        expect(orderTaken).toBe(true);
+
+        const order = engine.getState().activeOrder;
+        expect(order).not.toBeNull();
+
+        if (order) {
+          const baseTime = order.foodRecipe.baseTime;
+          const expectedTime = baseTime / multiplier;
+          expect(order.totalTime).toBeCloseTo(expectedTime, 1);
+        }
+      });
+    });
+
+    it('should apply speed multiplier per station for multi-station recipes', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Upgrade bagelCase to level 2 (multiplier 1.25)
+      engine.upgradeStation('bagelCase', 'equipment');
+      // Upgrade cooler to level 3 (multiplier 1.5)
+      engine.upgradeStation('cooler', 'equipment');
+      engine.upgradeStation('cooler', 'equipment');
+
+      // Add customer and take order
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order) {
+        // For multi-station orders without managers, time is sum of station times
+        // Each station processes with its own speed multiplier
+        const baseTime = order.foodRecipe.baseTime;
+
+        // Without managers, series processing: sum of times per station
+        // Expected: baseTime/1.25 + baseTime/1.5 = baseTime * (0.8 + 0.667)
+        const expectedTime = baseTime / 1.25 + baseTime / 1.5;
+
+        expect(order.totalTime).toBeCloseTo(expectedTime, 1);
+      }
+    });
+  });
+
+  describe('Processing Logic - Parallel vs Series (BT-007)', () => {
+    it('should process in series (sum of times) when no managers are hired', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Unlock slicer to get multi-station orders
+      engine.unlockStation('slicer');
+
+      // Take orders until we get one with multiple stations
+      let multiStationOrder = null;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order && order.foodRecipe.requiredStations.length > 1) {
+          multiStationOrder = order;
+          break;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      expect(multiStationOrder).not.toBeNull();
+
+      if (multiStationOrder) {
+        // With no managers, should use series processing (sum)
+        const baseTime = multiStationOrder.foodRecipe.baseTime;
+        const numStations = multiStationOrder.foodRecipe.requiredStations.length;
+
+        // Without equipment upgrades (all level 1), each station takes baseTime
+        // Total should be baseTime * numStations
+        expect(multiStationOrder.totalTime).toBeCloseTo(baseTime * numStations, 1);
+      }
+    });
+
+    it('should process in parallel (max time) when all stations have managers', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Hire managers for bagelCase and cooler
+      engine.hireManager('bagelCase');
+      engine.hireManager('cooler');
+
+      // Add customer and take order (will use bagelCase + cooler)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order && order.foodRecipe.requiredStations.length > 1) {
+        // With all managers, should use parallel processing (max)
+        const baseTime = order.foodRecipe.baseTime;
+
+        // All equipment level 1, so max time should be baseTime (not sum)
+        expect(order.totalTime).toBeCloseTo(baseTime, 1);
+      }
+    });
+
+    it('should process in series when any station lacks a manager', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Hire manager only for bagelCase, not for cooler
+      engine.hireManager('bagelCase');
+
+      // Take order with multiple stations
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order && order.foodRecipe.requiredStations.length > 1) {
+        // With any station lacking a manager, should use series processing
+        const baseTime = order.foodRecipe.baseTime;
+        const numStations = order.foodRecipe.requiredStations.length;
+
+        // Should be sum (series), not max (parallel)
+        expect(order.totalTime).toBeCloseTo(baseTime * numStations, 1);
+      }
+    });
+
+    it('should handle parallel processing with beverages correctly', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Unlock beverages and hire managers for all stations
+      engine.unlockStation('beverages');
+      engine.hireManager('bagelCase');
+      engine.hireManager('cooler');
+      engine.hireManager('beverages');
+
+      // Take orders until we get one with beverage
+      let orderWithBeverage = null;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order?.beverageRecipe) {
+          orderWithBeverage = order;
+          break;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      expect(orderWithBeverage).not.toBeNull();
+
+      if (orderWithBeverage) {
+        // With all managers, should use parallel (max time)
+        const foodTime = orderWithBeverage.foodRecipe.baseTime;
+        const beverageTime = orderWithBeverage.beverageRecipe?.baseTime ?? 0;
+        const expectedTime = Math.max(foodTime, beverageTime);
+
+        expect(orderWithBeverage.totalTime).toBeCloseTo(expectedTime, 1);
+      }
+    });
+
+    it('should handle series processing with beverages correctly', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Unlock beverages but don't hire any managers
+      engine.unlockStation('beverages');
+
+      // Take orders until we get one with beverage
+      let orderWithBeverage = null;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order?.beverageRecipe) {
+          orderWithBeverage = order;
+          break;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      expect(orderWithBeverage).not.toBeNull();
+
+      if (orderWithBeverage) {
+        // Without managers, should use series (sum of all station times)
+        const foodBaseTime = orderWithBeverage.foodRecipe.baseTime;
+        const beverageBaseTime = orderWithBeverage.beverageRecipe?.baseTime ?? 0;
+        const foodStations = orderWithBeverage.foodRecipe.requiredStations.length;
+        const beverageStations = orderWithBeverage.beverageRecipe?.requiredStations.length ?? 0;
+
+        // Sum of all individual station times
+        const expectedTime = foodBaseTime * foodStations + beverageBaseTime * beverageStations;
+
+        expect(orderWithBeverage.totalTime).toBeCloseTo(expectedTime, 1);
+      }
+    });
+
+    it('should process single-station orders correctly', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Take order with single station (bagelCase only)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order && order.foodRecipe.requiredStations.length === 1) {
+        // Single station order should just use baseTime
+        const baseTime = order.foodRecipe.baseTime;
+        expect(order.totalTime).toBeCloseTo(baseTime, 1);
+      }
+    });
+
+    it('should combine speed multipliers with parallel processing', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Upgrade equipment levels
+      engine.upgradeStation('bagelCase', 'equipment'); // Level 2: multiplier 1.25
+      engine.upgradeStation('cooler', 'equipment'); // Level 2: multiplier 1.25
+
+      // Hire managers for parallel processing
+      engine.hireManager('bagelCase');
+      engine.hireManager('cooler');
+
+      // Take order
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order && order.foodRecipe.requiredStations.length > 1) {
+        const baseTime = order.foodRecipe.baseTime;
+
+        // With parallel processing and speed multipliers:
+        // Each station: baseTime / 1.25
+        // Parallel takes max, so: baseTime / 1.25
+        const expectedTime = baseTime / 1.25;
+
+        expect(order.totalTime).toBeCloseTo(expectedTime, 1);
+      }
+    });
+
+    it('should combine speed multipliers with series processing', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Upgrade equipment levels differently for each station
+      engine.upgradeStation('bagelCase', 'equipment'); // Level 2: multiplier 1.25
+      engine.upgradeStation('cooler', 'equipment'); // Level 2: multiplier 1.25
+      engine.upgradeStation('cooler', 'equipment'); // Level 3: multiplier 1.5
+
+      // Don't hire managers - series processing
+
+      // Take order
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order && order.foodRecipe.requiredStations.length > 1) {
+        const baseTime = order.foodRecipe.baseTime;
+
+        // With series processing and speed multipliers:
+        // bagelCase: baseTime / 1.25
+        // cooler: baseTime / 1.5
+        // Total: sum of both
+        const expectedTime = baseTime / 1.25 + baseTime / 1.5;
+
+        expect(order.totalTime).toBeCloseTo(expectedTime, 1);
+      }
     });
   });
 });
