@@ -1,0 +1,70 @@
+epics:
+  - id: EPIC-1
+    title: "Game Engine Foundations"
+    status: TODO
+    tasks:
+      - id: BT-001
+        title: "Type Definitions & Core Constants"
+        description: "Translate 'Stations' and 'Recipes' tables from PRD into TypeScript interfaces. Include all cost, time, and upgrade formulas from the Appendix."
+        status: TODO
+      - id: BT-002
+        title: "Engine Class & Observable Pattern"
+        description: "Build the singleton BagelTycoonEngine. Implement the 'subscribe' pattern to notify the UI of state changes, maintaining strict decoupling."
+        status: TODO
+      - id: BT-003
+        title: "100ms Tick & Persistence"
+        description: "Implement the 100ms game loop and localStorage save/load logic. Ensure the loop handles resource accumulation and timer countdowns."
+        status: TODO
+
+  - id: EPIC-2
+    title: "Core Simulation & Logic"
+    status: TODO
+    tasks:
+      - id: BT-004
+        title: "Customer Queue & Spawning"
+        description: "Implement customer arrival logic: 1 customer every 5 seconds, max 5 total. Reference the 'Core Game Loop' section."
+        status: TODO
+      - id: BT-005
+        title: "Dynamic Order Generation"
+        description: "Create the recipe filter. Orders must only include items where stations and ingredients are unlocked. Follow the 60% beverage chance logic."
+        status: TODO
+      - id: BT-006
+        title: "Processing Logic (Parallel vs. Series)"
+        description: "Implement the station timing logic. Without managers, stations process in series (sum). With managers, process in parallel (max)."
+        status: TODO
+      - id: BT-007
+        title: "Pricing & Speed Bonus Logic"
+        description: "Strictly implement the finalPrice formula including Quality Multipliers and the three-tier Speed Bonus from the Appendix."
+        status: TODO
+      - id: BT-008
+        title: "Shop Management Methods"
+        description: "Implement engine methods for unlockStation, hireManager, and addIngredient, validating money and storage levels (3/5/8)."
+        status: TODO
+      - id: BT-009
+        title: "Prestige System & Starter Perks"
+        description: "Implement the $10,000 reset trigger and apply the +10% income bonus. Create a draft of 5-7 perks from the PRD examples."
+        status: TODO
+
+  - id: EPIC-3
+    title: "React UI Layer (POS Style)"
+    status: TODO
+    tasks:
+      - id: BT-010
+        title: "POS Layout & Shell"
+        description: "Implement the 2-column grid and Header. Include the random tagline selector from the pool in the 'Header' section."
+        status: TODO
+      - id: BT-011
+        title: "Active Order & Queue UI"
+        description: "Render the emoji queue and the high-contrast active order display with the animated progress bar and countdown timer."
+        status: TODO
+      - id: BT-012
+        title: "Station Grid & Cards"
+        description: "Build the 2x3 grid. Apply the specific color palette for each station (e.g., Orange for Bagel Case, Blue for Cooler)."
+        status: TODO
+      - id: BT-013
+        title: "Station Upgrade Modal"
+        description: "Create the 2-column modal for Equipment/Quality upgrades and Ingredient management. Add the 'Hire Manager' section."
+        status: TODO
+      - id: BT-014
+        title: "Sales Ledger Component"
+        description: "Implement the white card history feed showing the last 5 sales with

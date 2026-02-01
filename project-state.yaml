@@ -1,0 +1,8 @@
+project_name: Bagel Tycoon
+version: 0.1.0
+current_epic: "EPIC-1: Game Engine Architecture"
+last_update: "2026-02-01"
+technical_stack: ["React", "TypeScript", "Vite", "Tailwind", "Lucide React"]
+active_systems: ["", ""]
+known_issues: []
+memo_from_last_run: "PRD received and uploaded. Initial project scaffolding completed."
