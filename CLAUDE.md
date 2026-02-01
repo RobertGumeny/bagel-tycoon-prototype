@@ -2,7 +2,7 @@
 
 ## RESEARCH:
 
-### FOR FEATURES: Read bagel-tycoon-prd.md, project-state.yaml, and tasks.yaml. Identify the highest priority task from the EPIC in progress, or next EPIC in the backlog, that is not blocked. Create a new branch named after the task you are working on (feature/BT-01). As soon as you create the new branch, pull from main to ensure we are up-to-date.
+### FOR FEATURES: Read bagel-tycoon-prd.md, project-state.yaml, and tasks.yaml. Identify the highest priority task from the EPIC in progress, or next EPIC in the backlog, that is not blocked. Create a new branch named after the task you are working on (e.g. feature/BT-01) or, if the overall effort is an entire epic, name the branch after the epic (e.g. feature/EPIC-2). As soon as you create the new branch, pull from main to ensure we are up-to-date.
 
 ### FOR BUGFIXES: Read BUG_REPORT.md and reference project-state.yml or tasks.yml for more information about the task impacted by the bug. Create a new branch named after the bugfix we are working on (fix/BUG-1). As soon as you create the new branch, pull from main to ensure we are up-to-date.
 
