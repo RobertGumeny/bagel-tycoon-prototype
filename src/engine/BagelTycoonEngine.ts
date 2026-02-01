@@ -1,6 +1,6 @@
 /**
  * BagelTycoonEngine - Core game logic engine
- * Task: BT-002
+ * Tasks: BT-002, BT-003
  *
  * Singleton class that manages all game state and logic.
  * Completely decoupled from React/DOM for maximum testability and reusability.
@@ -19,7 +19,13 @@ import {
   UPGRADE_MULTIPLIER,
   BASE_COSTS,
   CUSTOMER_EMOJIS,
+  TIMING,
 } from './types';
+
+/**
+ * LocalStorage key for persisting game state
+ */
+const SAVE_KEY = 'bagel-tycoon-save';
 
 /**
  * Type for state change subscribers
@@ -34,6 +40,11 @@ export class BagelTycoonEngine {
   private state: GameState;
   private subscribers: Set<StateSubscriber> = new Set();
 
+  // Game loop management
+  private tickIntervalId: ReturnType<typeof setInterval> | null = null;
+  private lastTickTime: number = performance.now();
+  private isRunning: boolean = false;
+
   /**
    * Private constructor enforces singleton pattern
    */
@@ -41,14 +52,27 @@ export class BagelTycoonEngine {
     this.state = initialState
       ? this.mergeWithDefaults(initialState)
       : this.initializeDefaultState();
+
+    // Start game loop automatically
+    this.start();
+
+    // Set up auto-save on page unload
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => {
+        this.save();
+      });
+    }
   }
 
   /**
    * Get singleton instance of the engine
+   * Automatically loads from localStorage if no initial state provided
    */
   public static getInstance(initialState?: Partial<GameState>): BagelTycoonEngine {
     if (!BagelTycoonEngine.instance) {
-      BagelTycoonEngine.instance = new BagelTycoonEngine(initialState);
+      // Load from localStorage if no initial state provided
+      const savedState = initialState ?? BagelTycoonEngine.load() ?? undefined;
+      BagelTycoonEngine.instance = new BagelTycoonEngine(savedState);
     }
     return BagelTycoonEngine.instance;
   }
@@ -57,6 +81,9 @@ export class BagelTycoonEngine {
    * Reset singleton instance (useful for testing)
    */
   public static resetInstance(): void {
+    if (BagelTycoonEngine.instance) {
+      BagelTycoonEngine.instance.stop();
+    }
     BagelTycoonEngine.instance = null;
   }
 
@@ -472,18 +499,162 @@ export class BagelTycoonEngine {
   }
 
   // ============================================================================
-  // Public API - Game Loop (Stub for BT-003)
+  // Public API - Game Loop (BT-003)
   // ============================================================================
+
+  /**
+   * Start the game loop
+   * Called automatically on instantiation
+   */
+  public start(): void {
+    if (this.isRunning) {
+      console.warn('Game loop already running');
+      return;
+    }
+
+    this.isRunning = true;
+    this.lastTickTime = performance.now();
+
+    this.tickIntervalId = setInterval(() => {
+      const now = performance.now();
+      const deltaTime = (now - this.lastTickTime) / 1000; // Convert to seconds
+      this.lastTickTime = now;
+
+      this.tick(deltaTime);
+    }, TIMING.tickInterval);
+
+    console.log('Game loop started');
+  }
+
+  /**
+   * Stop the game loop and save state
+   */
+  public stop(): void {
+    if (!this.isRunning) {
+      return;
+    }
+
+    if (this.tickIntervalId !== null) {
+      clearInterval(this.tickIntervalId);
+      this.tickIntervalId = null;
+    }
+
+    this.isRunning = false;
+    this.save();
+
+    console.log('Game loop stopped');
+  }
 
   /**
    * Update game state based on elapsed time
    * Called every 100ms by game loop
    * @param deltaTime Time elapsed since last tick in seconds
    */
-  public tick(deltaTime: number): void {
-    // Implementation will be added in BT-003
-    // This stub ensures the method exists for future implementation
-    void deltaTime; // Suppress unused parameter warning
+  private tick(deltaTime: number): void {
+    const now = Date.now();
+
+    // Update active order progress
+    if (this.state.activeOrder) {
+      this.state.activeOrder.remainingTime -= deltaTime;
+
+      // Complete order when time runs out
+      if (this.state.activeOrder.remainingTime <= 0) {
+        this.completeOrder();
+      }
+    }
+
+    // Auto-save every 5 seconds
+    if (now - this.state.lastSave >= TIMING.autoSaveInterval) {
+      this.save();
+      this.state.lastSave = now;
+    }
+
+    // Notify subscribers of state changes
+    this.notify();
+  }
+
+  /**
+   * Complete the current active order
+   * Full implementation in BT-007, this is a placeholder
+   */
+  private completeOrder(): void {
+    if (!this.state.activeOrder) {
+      return;
+    }
+
+    // Placeholder: Just clear the order for now
+    // Full pricing and bonus calculation will be added in BT-007
+    const order = this.state.activeOrder;
+    const basePrice = order.foodRecipe.basePrice + (order.beverageRecipe?.basePrice ?? 0);
+
+    // Add money (basic implementation)
+    this.addMoney(basePrice);
+
+    // Clear active order
+    this.state.activeOrder = null;
+
+    console.log(`Order completed: ${order.foodRecipe.name}, earned $${basePrice.toFixed(2)}`);
+  }
+
+  // ============================================================================
+  // Public API - Persistence (BT-003)
+  // ============================================================================
+
+  /**
+   * Save current game state to localStorage
+   */
+  public save(): void {
+    try {
+      const serializedState = {
+        ...this.state,
+        // Convert Map to object for JSON serialization
+        stations: Object.fromEntries(this.state.stations),
+      };
+
+      localStorage.setItem(SAVE_KEY, JSON.stringify(serializedState));
+      console.log('Game saved successfully');
+    } catch (error) {
+      console.error('Failed to save game:', error);
+    }
+  }
+
+  /**
+   * Load game state from localStorage
+   * @returns Loaded state or null if not found/invalid
+   */
+  public static load(): Partial<GameState> | null {
+    try {
+      const saved = localStorage.getItem(SAVE_KEY);
+      if (!saved) {
+        console.log('No saved game found');
+        return null;
+      }
+
+      const parsed = JSON.parse(saved);
+
+      // Convert stations object back to Map
+      if (parsed.stations && typeof parsed.stations === 'object') {
+        parsed.stations = new Map(Object.entries(parsed.stations) as [string, StationState][]);
+      }
+
+      console.log('Game loaded successfully');
+      return parsed;
+    } catch (error) {
+      console.error('Failed to load game:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear saved game from localStorage
+   */
+  public static clearSave(): void {
+    try {
+      localStorage.removeItem(SAVE_KEY);
+      console.log('Saved game cleared');
+    } catch (error) {
+      console.error('Failed to clear save:', error);
+    }
   }
 
   // ============================================================================

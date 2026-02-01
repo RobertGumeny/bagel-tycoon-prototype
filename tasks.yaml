@@ -31,7 +31,7 @@ epics:
           - "Implement auto-save logic to localStorage every 5 seconds."
           - "Ensure the Engine hydrates its state from localStorage on instantiation."
           - "Tick down activeOrder.remainingTime and emit updates every tick."
-        status: TODO
+        status: DONE
 
   - id: EPIC-2
     title: "Core Simulation & Logic"
