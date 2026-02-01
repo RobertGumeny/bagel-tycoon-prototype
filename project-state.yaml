@@ -18,4 +18,4 @@ recent_bugs:
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
-memo_from_last_run: "BT-005 completed: Customer queue and spawning system implemented. Customers now automatically spawn every 5 seconds (respecting max queue size of 5). Added spawnCustomer() method integrated into game loop tick. Comprehensive test suite added with 8 new tests using fake timers. All 79 tests passing. Ready to proceed with BT-006 (Dynamic Order Generation)."
+memo_from_last_run: "BT-006 completed: Dynamic order generation system implemented. Orders now filter recipes by unlocked stations and ingredients, with 60% chance to add beverages. Added RECIPES constant with 27 comprehensive recipes covering all station combinations. Total time calculated as sum of component base times. Added 13 new tests covering recipe filtering, beverage probability, and time calculations. All 92 tests passing. Ready to proceed with BT-007 (Processing Logic)."

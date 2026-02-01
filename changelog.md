@@ -8,6 +8,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added - 2026-02-01
+
+#### BT-006: Dynamic Order Generation
+
+- Implemented comprehensive recipe system with 27 unique recipes:
+  - 19 food recipes covering all station combinations (simple bagels to multi-station deluxe sandwiches)
+  - 8 beverage recipes for the beverage station
+- Implemented dynamic order generation in `generateOrder()` method:
+  - Filters recipes by unlocked stations and ingredients
+  - Randomly selects from available food recipes
+  - 60% probability to add beverage when beverages station is unlocked
+  - Calculates total base time as sum of food and beverage preparation times
+  - Generates unique order IDs using timestamp + counter
+- Updated `takeOrder()` to use new dynamic order generation
+- Added order counter to ensure unique order IDs even when created in rapid succession
+- Added 13 comprehensive unit tests:
+  - Recipe filtering by unlocked stations and ingredients
+  - Beverage addition probability testing (60% chance)
+  - Total time calculation verification
+  - Edge cases (no available recipes, starter recipes only)
+  - Order uniqueness and customer emoji handling
+
+**Technical Details:**
+
+- All recipes defined in `types.ts` as `RECIPES` constant with proper typing
+- Recipe filtering checks both station unlock status and ingredient availability
+- Beverage probability implemented with `Math.random() < 0.6` check
+- Unique stations list generated using Set to avoid duplicates
+- Order counter prevents ID collisions when orders created in tight loops
+
+**Testing:**
+
+- ✅ All 92 unit tests passing (79 previous + 13 new)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Build successful (193.91 KB bundle)
+- ✅ Recipe filtering works correctly for all unlock states
+- ✅ Beverage probability verified across 100 orders (statistical validation)
+
 ### Fixed - 2026-02-01
 
 #### BUG-1: mergeWithDefaults Empty Stations Fix
