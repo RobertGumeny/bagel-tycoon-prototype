@@ -47,6 +47,56 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ✅ Recipe filtering works correctly for all unlock states
 - ✅ Beverage probability verified across 100 orders (statistical validation)
 
+#### BT-007: Processing Logic (Parallel vs. Series)
+
+- Implemented order processing time calculations with speed multipliers and parallel/series logic
+- Added `calculateOrderProcessingTime()` private method to BagelTycoonEngine:
+  - Applies speed multiplier per station: `baseTime / (1 + (equipmentLevel - 1) * 0.25)`
+  - Parallel processing (max time) when all stations involved have managers
+  - Series processing (sum of times) when any station lacks a manager
+  - Handles both food-only and food + beverage orders correctly
+  - Accounts for different equipment levels across multiple stations
+- Updated `generateOrder()` to use new processing time calculation instead of simple baseTime sum
+- Speed multiplier implementation:
+  - Each station processes at its own speed based on equipment level
+  - Level 1: 1.0x speed (no bonus)
+  - Level 2: 1.25x speed (20% faster)
+  - Level 3: 1.5x speed (33% faster)
+  - Level 5: 2.0x speed (50% faster)
+- Parallel vs. Series processing:
+  - Parallel (all managers): Order completes when slowest station finishes (max time)
+  - Series (any without manager): Stations process sequentially (sum of times)
+  - Manager hiring now has significant gameplay impact on order completion speed
+- Added SPEED_MULTIPLIER constant import from types.ts
+- Added 11 comprehensive unit tests:
+  - Speed multiplier calculations for different equipment levels
+  - Multi-station recipes with different upgrade levels per station
+  - Series processing verification (no managers)
+  - Parallel processing verification (all managers hired)
+  - Mixed manager scenarios (some hired, some not)
+  - Beverage orders with parallel and series processing
+  - Single-station order handling
+  - Combined speed multipliers with parallel/series logic
+- Updated 3 existing BT-006 tests to reflect new processing logic
+
+**Technical Details:**
+
+- Processing time calculated per station, then combined based on manager status
+- All unique stations involved in order checked for manager status
+- Speed multiplier uses SPEED_MULTIPLIER constant (0.25) for consistency
+- Works correctly with single-station, multi-station, and beverage orders
+- Maintains backward compatibility with existing order generation system
+
+**Testing:**
+
+- ✅ All 103 unit tests passing (92 previous + 11 new)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Build successful (193.91 KB bundle)
+- ✅ Speed multipliers verified for equipment levels 1-5
+- ✅ Parallel/series logic verified across multiple scenarios
+- ✅ Beverage order processing correctly handles all manager combinations
+
 ### Fixed - 2026-02-01
 
 #### BUG-1: mergeWithDefaults Empty Stations Fix
