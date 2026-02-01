@@ -32,6 +32,7 @@ epics:
           - "Ensure the Engine hydrates its state from localStorage on instantiation."
           - "Tick down activeOrder.remainingTime and emit updates every tick."
         status: DONE
+
       - id: BT-004
         title: "Unit Tests for Engine Core"
         description: "Ensure reliability of foundational logic for simulation."

@@ -7,7 +7,7 @@ Success Criteria:
 - All requirements implemented successfully
 - All tests passing
 - No linter errors, build errors, or warnings
-- Documentation and changelog updated
+- Documentation and CHANGELOG updated
 
 After 5 iterations without a successful implementation:
 
