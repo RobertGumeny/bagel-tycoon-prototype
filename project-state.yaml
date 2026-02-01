@@ -1,6 +1,6 @@
 project_name: Bagel Tycoon
 version: 0.1.0
-current_epic: "EPIC-1: Game Engine Architecture"
+current_epic: "EPIC-2: Core Simulation & Logic"
 last_update: "2026-02-01"
 technical_stack: ["React", "TypeScript", "Vite", "Tailwind", "Lucide React"]
 active_systems:
@@ -11,10 +11,11 @@ active_systems:
     "Observable Pattern",
     "Game Loop",
     "Persistence",
+    "Customer Spawning",
   ]
 known_issues: []
 recent_bugs:
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
-memo_from_last_run: "BT-004 completed: Comprehensive unit test suite for engine core with 68 passing tests covering singleton pattern, observable pattern, state management, station unlocking/upgrades, manager hiring, ingredient unlocking, automation, order management, persistence, and cost calculations. Test infrastructure set up with Vitest. EPIC-1 (Game Engine Architecture) is now complete."
+memo_from_last_run: "BT-005 completed: Customer queue and spawning system implemented. Customers now automatically spawn every 5 seconds (respecting max queue size of 5). Added spawnCustomer() method integrated into game loop tick. Comprehensive test suite added with 8 new tests using fake timers. All 79 tests passing. Ready to proceed with BT-006 (Dynamic Order Generation)."

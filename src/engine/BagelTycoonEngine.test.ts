@@ -780,6 +780,130 @@ describe('BagelTycoonEngine', () => {
   });
 
   // ============================================================================
+  // Customer Queue & Spawning Tests (BT-005)
+  // ============================================================================
+
+  describe('Customer Spawning', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should spawn a customer after 5 seconds', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Initially queue should be empty
+      let state = engine.getState();
+      expect(state.customerQueue.length).toBe(0);
+
+      // Advance time by 5 seconds (includes game loop ticks)
+      vi.advanceTimersByTime(5100);
+
+      // Customer should be spawned
+      state = engine.getState();
+      expect(state.customerQueue.length).toBe(1);
+      expect(state.customerQueue[0]).toBeTruthy();
+    });
+
+    it('should spawn multiple customers over time', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Spawn 3 customers
+      for (let i = 0; i < 3; i++) {
+        vi.advanceTimersByTime(5100);
+      }
+
+      const state = engine.getState();
+      expect(state.customerQueue.length).toBe(3);
+    });
+
+    it('should not exceed maximum queue size of 5', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Try to spawn 10 customers
+      for (let i = 0; i < 10; i++) {
+        vi.advanceTimersByTime(5100);
+      }
+
+      const state = engine.getState();
+      expect(state.customerQueue.length).toBe(5);
+    });
+
+    it('should stop spawning when queue is full', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Fill queue to max (5 customers)
+      for (let i = 0; i < 5; i++) {
+        vi.advanceTimersByTime(5100);
+      }
+
+      const queueBeforeExtraTime = [...engine.getState().customerQueue];
+
+      // Advance more time
+      vi.advanceTimersByTime(10100);
+
+      const state = engine.getState();
+      expect(state.customerQueue.length).toBe(5);
+      expect(state.customerQueue).toEqual(queueBeforeExtraTime);
+    });
+
+    it('should resume spawning after queue has space', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Fill queue
+      for (let i = 0; i < 5; i++) {
+        vi.advanceTimersByTime(5100);
+      }
+
+      expect(engine.getState().customerQueue.length).toBe(5);
+
+      // Take an order to make space
+      engine.takeOrder();
+      expect(engine.getState().customerQueue.length).toBe(4);
+
+      // Spawn another customer
+      vi.advanceTimersByTime(5100);
+      expect(engine.getState().customerQueue.length).toBe(5);
+    });
+
+    it('should use customer emojis from CUSTOMER_EMOJIS constant', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      vi.advanceTimersByTime(5100);
+
+      const state = engine.getState();
+      const customer = state.customerQueue[0];
+
+      // Customer should be a string (emoji)
+      expect(typeof customer).toBe('string');
+      expect(customer.length).toBeGreaterThan(0);
+    });
+
+    it('should spawn customers at regular intervals', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Check spawning at each 5-second interval
+      for (let i = 0; i < 4; i++) {
+        vi.advanceTimersByTime(5100);
+        expect(engine.getState().customerQueue.length).toBe(i + 1);
+      }
+    });
+
+    it('should not spawn before 5 seconds have elapsed', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Advance time by less than 5 seconds
+      vi.advanceTimersByTime(4900);
+
+      const state = engine.getState();
+      expect(state.customerQueue.length).toBe(0);
+    });
+  });
+
+  // ============================================================================
   // Persistence Tests
   // ============================================================================
 

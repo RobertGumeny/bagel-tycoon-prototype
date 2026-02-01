@@ -555,6 +555,12 @@ export class BagelTycoonEngine {
   private tick(deltaTime: number): void {
     const now = Date.now();
 
+    // Spawn customers every 5 seconds (BT-005)
+    if (now - this.state.lastCustomerSpawn >= TIMING.customerSpawnInterval) {
+      this.spawnCustomer();
+      this.state.lastCustomerSpawn = now;
+    }
+
     // Update active order progress
     if (this.state.activeOrder) {
       this.state.activeOrder.remainingTime -= deltaTime;
@@ -596,6 +602,21 @@ export class BagelTycoonEngine {
     this.state.activeOrder = null;
 
     console.log(`Order completed: ${order.foodRecipe.name}, earned $${basePrice.toFixed(2)}`);
+  }
+
+  /**
+   * Spawn a new customer in the queue
+   * BT-005: Customer spawning logic
+   */
+  private spawnCustomer(): void {
+    // Don't spawn if queue is full
+    if (this.state.customerQueue.length >= TIMING.maxQueueSize) {
+      return;
+    }
+
+    // Add random customer emoji to queue
+    const customer = this.getRandomCustomer();
+    this.state.customerQueue.push(customer);
   }
 
   // ============================================================================

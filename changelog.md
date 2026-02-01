@@ -184,3 +184,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ✅ ESLint passes with no errors or warnings
 - ✅ Build successful (193.91 KB bundle)
 - ✅ Test coverage for all implemented engine features
+
+#### BT-005: Customer Queue & Spawning
+
+- Implemented automatic customer spawning in game loop:
+  - Added `spawnCustomer()` method to BagelTycoonEngine
+  - Customers spawn every 5 seconds when queue has space
+  - Queue respects maximum size of 5 customers
+  - Spawning integrated into existing `tick()` method
+  - Uses `TIMING.customerSpawnInterval` and `TIMING.maxQueueSize` constants
+  - Updates `lastCustomerSpawn` timestamp for proper timing
+- Customer spawning features:
+  - Random emoji selection from `CUSTOMER_EMOJIS` pool via `getRandomCustomer()`
+  - Automatic spawning stops when queue is full
+  - Resumes spawning after queue has space (e.g., after takeOrder)
+  - Customers stored as emoji string IDs in queue array
+- Verified existing `takeOrder()` functionality:
+  - Properly shifts customers from queue (FIFO)
+  - Creates active order with customer emoji
+  - Validates queue state before taking order
+- Added comprehensive test suite with 8 new tests:
+  - Customer spawns after 5 seconds
+  - Multiple customers spawn at regular intervals
+  - Queue never exceeds 5 customers
+  - Spawning stops when full and resumes when space available
+  - Customers use emojis from CUSTOMER_EMOJIS constant
+  - No spawning before 5-second interval elapses
+
+**Technical Details:**
+
+- Customer spawning integrated into 100ms game loop tick
+- Time-based spawning using `Date.now()` and `lastCustomerSpawn` comparison
+- Queue size validation prevents overflow
+- Tests use Vitest fake timers with `vi.useFakeTimers()` and `vi.useRealTimers()`
+- Timer advancement properly triggers game loop intervals
+
+**Testing:**
+
+- ✅ All 79 unit tests passing (71 previous + 8 new)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Customer spawning verified at correct intervals
+- ✅ Queue size limits enforced correctly
