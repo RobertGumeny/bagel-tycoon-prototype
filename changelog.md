@@ -10,6 +10,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added - 2026-02-01
 
+#### BT-014: Lucide Icon Integration & Button Styling
+
+- Added station-specific Lucide icons to enhance visual identity and affordance
+- Mapped icons to stations following PRD specifications:
+  - Bagel Case: Utensils (cutlery icon for food prep)
+  - Cooler: Refrigerator (cooling and fresh ingredients)
+  - Beverages: Coffee (coffee cup for drinks)
+  - Slicer: Beef (meat icon for deli station)
+  - Griddle: Flame (fire icon for cooking station)
+  - Fryer: Zap (electric bolt for high-heat cooking)
+- Refactored "Click to Manage" text into distinct high-contrast button:
+  - Dark background (bg-slate-900) with white text for maximum contrast
+  - Positioned at bottom of station card with border separator
+  - Full-width button with centered text
+  - Maintains uppercase tracking and bold font weight
+- Enhanced station card interactivity:
+  - Added hover:scale-[0.98] for subtle hover feedback
+  - Maintains existing active:scale-95 for button press
+  - Smooth transitions for professional feel
+- Improved station card layout:
+  - Station icon displayed prominently at top (w-12 h-12 size)
+  - Centered icon and station name for better visual hierarchy
+  - Icon inherits station color scheme for consistency
+
+**Technical Details:**
+
+- Imported Lucide React icons: Utensils, Refrigerator, Coffee, Beef, Flame
+- Created STATION_ICONS mapping constant with type LucideIcon
+- Icons use existing station color classes (text-orange-700, text-blue-700, etc.)
+- Button styling uses mt-2 pt-4 with border-t for visual separation
+- Hover effect uses scale-[0.98] for subtle feedback before active press
+
+**Testing:**
+
+- ✅ All 136 unit tests passing (no UI test changes required)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Build successful (230.76 KB bundle)
+- ✅ All station icons display correctly
+- ✅ Hover states provide clear interactivity feedback
+- ✅ Button styling provides high-contrast affordance
+
 #### BT-013: Queue Spawning Fix & Delay
 
 - Fixed queue spawning to start with empty queue and gradual customer arrival

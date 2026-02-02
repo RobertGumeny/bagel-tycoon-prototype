@@ -29,7 +29,7 @@ epics:
           - "Map Lucide icons to stations: BagelCase (Utensils), Cooler (Ice), Beverages (Coffee), Slicer (Beef), Griddle (Flame), Fryer (Zap)."
           - "Refactor 'Click to Manage' text into a distinct, high-contrast button centered at the bottom of the card."
           - "Add hover states (scale-down 0.95) to all station cards to indicate interactivity."
-        status: TODO
+        status: DONE
 
       - id: BT-015
         title: "Sales Ticker & Interactive Ledger"
@@ -47,4 +47,13 @@ epics:
           - "Style the 'Add Ingredient' button as a tag matching existing ingredient dimensions."
           - "Use a dashed border, muted text, and a '+' prefix for the unlockable ingredient."
           - "Ensure the button correctly disables and greys out if 'Storage Level' capacity is reached."
+        status: TODO
+
+      - id: BT-017
+        title: "Register Automation Fix"
+        description: "Fix register automation so that it actually takes orders automatically."
+        requirements:
+          - "Once the register is automated, it should take orders without player input."
+          - "The Take Order button should shrink and be disabled."
+          - "The player should now have the ability to add a 2nd cash register below the first."
         status: TODO

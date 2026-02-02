@@ -6,7 +6,8 @@
  * Positioned below ActiveOrder, bridges the gap between Queue and Active Order.
  */
 
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from "lucide-react";
+import { BASE_COSTS } from "../engine/types";
 
 interface RegisterProps {
   hasRegisterManager: boolean;
@@ -16,7 +17,7 @@ interface RegisterProps {
   onAutomateRegister: () => void;
 }
 
-const REGISTER_MANAGER_COST = 250;
+const REGISTER_MANAGER_COST = BASE_COSTS.registerManager;
 
 export function Register({
   hasRegisterManager,
@@ -32,8 +33,8 @@ export function Register({
     <div
       className={`p-6 rounded-3xl ${
         hasRegisterManager
-          ? 'card' // Solid POS-card style when automated
-          : 'border-2 border-dashed border-slate-300 bg-white' // Dashed border when unautomated
+          ? "card" // Solid POS-card style when automated
+          : "border-2 border-dashed border-slate-300 bg-white" // Dashed border when unautomated
       }`}
     >
       {/* Register Header */}
