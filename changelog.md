@@ -10,6 +10,58 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added - 2026-02-01
 
+#### BT-012: Cash Register Station & Order Automation
+
+- Created Register component positioned below ActiveOrder display
+- Implemented "Take Order" button functionality:
+  - Button disabled when queue is empty or order is active
+  - Click handler calls engine.takeOrder() to shift customer from queue
+  - Enables manual order taking from customer queue
+- Implemented "Hire Register Manager" automation button:
+  - One-time purchase for $250
+  - Button disabled when player lacks sufficient funds
+  - Replaced by "Automated ✓" badge after purchase
+  - Enables automatic order taking when implemented in future tasks
+- Visual styling follows POS design patterns:
+  - Dashed border when unautomated (pending manager hire)
+  - Solid card styling when automated (manager hired)
+  - "Cash Register" header label
+  - Helper text explaining automation benefits
+- Connected Register to App.tsx with proper handlers:
+  - handleTakeOrder() - Triggers engine.takeOrder()
+  - handleAutomateRegister() - Triggers engine.automateRegister()
+  - Passes game state (hasRegisterManager, canTakeOrder, money)
+- Added comprehensive test suite with 17 tests:
+  - Component rendering in automated and unautomated states
+  - Button enable/disable states based on queue and funds
+  - Click handler invocation
+  - Visual styling verification (dashed vs solid borders)
+  - Badge and description text display
+- Installed React testing libraries:
+  - @testing-library/react for component testing
+  - @testing-library/user-event for interaction testing
+  - @testing-library/jest-dom for DOM matchers
+- Configured Vitest setup file for jest-dom matchers
+
+**Technical Details:**
+
+- Register component uses Lucide React CheckCircle2 icon for automated badge
+- Positioned in sidebar layout between ActiveOrder and StationGrid (via gap-6 spacing)
+- canTakeOrder prop computed from queue length and activeOrder state
+- REGISTER_MANAGER_COST constant ($250) defined in component
+- All button states use Tailwind disabled: utilities for consistent UX
+- Test setup file added to vite.config.ts setupFiles array
+
+**Testing:**
+
+- ✅ All 135 unit tests passing (118 engine + 17 Register component)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Build successful (228.63 KB bundle)
+- ✅ Register component renders correctly in both states
+- ✅ Button interactions trigger correct engine methods
+- ✅ Visual states match PRD requirements
+
 #### BT-011: Station Grid & Modals
 
 - Created StationCard component with locked and unlocked states:

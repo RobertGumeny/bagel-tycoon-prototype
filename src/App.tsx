@@ -1,6 +1,6 @@
 /**
  * Main App Component
- * Tasks: BT-009, BT-010, BT-011
+ * Tasks: BT-009, BT-010, BT-011, BT-012
  *
  * Manages game engine integration and renders the UI
  */
@@ -12,6 +12,7 @@ import { Header } from './components/Header';
 import { Layout } from './components/Layout';
 import { CustomerQueue } from './components/CustomerQueue';
 import { ActiveOrder } from './components/ActiveOrder';
+import { Register } from './components/Register';
 import { StationGrid } from './components/StationGrid';
 
 function App() {
@@ -30,6 +31,15 @@ function App() {
       unsubscribe();
     };
   }, [engine]);
+
+  // Order management handlers
+  const handleTakeOrder = () => {
+    engine.takeOrder();
+  };
+
+  const handleAutomateRegister = () => {
+    engine.automateRegister();
+  };
 
   // Station management handlers
   const handleUnlockStation = (stationId: string) => {
@@ -60,6 +70,13 @@ function App() {
             <div className="flex flex-col gap-6">
               <CustomerQueue queue={gameState.customerQueue} />
               <ActiveOrder order={gameState.activeOrder} />
+              <Register
+                hasRegisterManager={gameState.hasRegisterManager}
+                canTakeOrder={gameState.customerQueue.length > 0 && gameState.activeOrder === null}
+                money={gameState.money}
+                onTakeOrder={handleTakeOrder}
+                onAutomateRegister={handleAutomateRegister}
+              />
             </div>
           }
           main={
