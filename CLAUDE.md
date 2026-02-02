@@ -24,15 +24,15 @@
 
 ### FOR FEATURES: After successful verification of a feature implementation, take the following steps:
 
-- IF SUCCESS: Update project-state.yaml, mark task as DONE in tasks.yaml, and add entry to CHANGELOG.md. Keep the CHANGELOG items high level and do not include excessive details (exact stats, etc). Commit and push the branch, but do not create a pull request.
+- IF SUCCESS: Update project-state.yaml, mark task as DONE in tasks.yaml, and add entry to CHANGELOG.md. Keep the CHANGELOG items high level and do not include excessive details (exact stats, etc). Commit and push the branch, but do not create a pull request. Ensure you update the next_task in project-state.yaml.
 
-- IF FAILURE (Maximum 5 attempts): Revert changes using Git and generate a FAILURE_REPORT.md explicitly outlining the task and epic that failed, your proposed plan and what you tried, and your assessment of why it is failing.
+- IF FAILURE (Maximum 5 attempts): Revert changes using Git and generate a FAILURE_REPORT.md explicitly outlining the task and epic that failed, your proposed plan and what you tried, and your assessment of why it is failing. Ensure you update the next_task in project-state.yaml.
 
 ### FOR BUGFIXES:
 
-- IF SUCCESS: Update project-state.yaml, adding the bug to recent_bugs. If there are more than 5 recent bugs, remove the oldest. Move and rename BUG_REPORT.md to `/logs/bugs/EPIC-NAME/BUG-ID_FailureType.md (eg. BUG-003_TypeMismatch.md). Add entry to CHANGELOG.md. Keep the CHANGELOG items high level and do not include excessive details (exact stats, etc). Commit and push the branch, but do not create a pull request.
+- IF SUCCESS: Update project-state.yaml, adding the bug to recent_bugs. If there are more than 5 recent bugs, remove the oldest. Move and rename BUG_REPORT.md to `/logs/bugs/EPIC-NAME/BUG-ID_FailureType.md (eg. BUG-003_TypeMismatch.md). Add entry to CHANGELOG.md. Keep the CHANGELOG items high level and do not include excessive details (exact stats, etc). Commit and push the branch, but do not create a pull request. Ensure you update the next_task in project-state.yaml to the most recent task in the EPIC marked as TODO or IN-PROGRESS.
 
-- IF FAILURE (Maximum 5 attempts): Revert changes using Git and generate a FAILURE_REPORT.md explicitly outlining the bugfix and associated task that failed, your proposed plan and what you tried, and your assessment of why it is failing.
+- IF FAILURE (Maximum 5 attempts): Revert changes using Git and generate a FAILURE_REPORT.md explicitly outlining the bugfix and associated task that failed, your proposed plan and what you tried, and your assessment of why it is failing. Ensure you update the next_task in project-state.yaml
 
 ### EPIC COMPLETION CHECK:
 
