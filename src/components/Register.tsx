@@ -63,7 +63,7 @@ export function Register({
           onClick={onTakeOrder}
           disabled={!canTakeOrder || hasRegisterManager}
           className={`btn btn-primary w-full ${
-            hasRegisterManager ? 'py-2 text-sm' : 'py-4 text-base'
+            hasRegisterManager ? "py-2 text-sm" : "py-4 text-base"
           } font-bold uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           Take Order
