@@ -398,6 +398,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed - 2026-02-01
 
+#### BT-015: Sales Ticker & Interactive Ledger
+
+- Added `SalesTicker` button in the `Header` to cycle recent sales (last 5) beside the money display.
+- Ticker cycles through entries every 2 seconds and shows `+${finalPrice}` with a speed icon (⚡, ⭐, ⏱, 🐢).
+- Clicking the ticker opens the `DailyLedger` modal to inspect the full recent-sales list (up to 5 records) with timestamps and speed labels.
+- Connected UI to engine `salesHistory` produced by `BagelTycoonEngine` so ledger updates in real-time.
+- Updated App to manage ledger modal state and pass `salesHistory` into `Header`.
+
+**Testing:**
+
+- ✅ Manual UI verification: ticker cycles and opens ledger modal
+- ✅ Unit/engine compatibility: uses existing `SaleRecord` data with no engine changes required
+
 #### BUG-003: CSS Not Rendering
 
 - Fixed CSS rendering issue by adding PostCSS configuration for Tailwind CSS v4
