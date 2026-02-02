@@ -396,6 +396,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ✅ Final pricing accurately combines quality and speed modifiers
 - ✅ Sales history properly tracks all completed orders
 
+#### BT-016: Ingredient UI Refinement
+
+- Refined the `Add Ingredient` affordance inside the `StationModal`:
+  - Replaced full-width button with a compact tag-style control matching ingredient tag dimensions.
+  - Uses dashed border, muted text, and a leading `+` prefix for the unlockable ingredient.
+  - Shows ingredient cost inline and disables/greys out when storage capacity is reached or funds are insufficient.
+  - Provides small helper text for 'Storage Full' or 'Insufficient funds' next to the tag.
+
+**Testing:**
+
+- ✅ Visual/manual verification: tag-style button matches ingredient tags and shows dashed border.
+- ✅ Disabled state verified when storage capacity reached; shows muted text and prevents clicks.
+
 ### Fixed - 2026-02-01
 
 #### BT-015: Sales Ticker & Interactive Ledger
