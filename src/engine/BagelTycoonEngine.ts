@@ -49,6 +49,10 @@ export class BagelTycoonEngine {
   private lastTickTime: number = performance.now();
   private isRunning: boolean = false;
 
+  // Customer spawning control (BT-013)
+  private customerSpawningEnabled: boolean = false;
+  private firstCustomerSpawnTime: number | null = null;
+
   // Order ID counter for uniqueness
   private orderCounter: number = 0;
 
@@ -469,6 +473,28 @@ export class BagelTycoonEngine {
     return true;
   }
 
+  /**
+   * Enable customer spawning after game is mounted
+   * BT-013: Adds first customer delay to prevent overwhelming the player
+   */
+  public enableCustomerSpawning(): void {
+    if (this.customerSpawningEnabled) {
+      console.warn('Customer spawning already enabled');
+      return;
+    }
+
+    this.customerSpawningEnabled = true;
+    const now = Date.now();
+
+    // Set first customer to spawn after the initial delay
+    this.firstCustomerSpawnTime = now + TIMING.firstCustomerDelay;
+
+    // Reset last spawn time to now to ensure proper timing
+    this.state.lastCustomerSpawn = now;
+
+    console.log(`Customer spawning enabled. First customer will arrive in ${TIMING.firstCustomerDelay}ms`);
+  }
+
   // ============================================================================
   // Public API - Order Management
   // ============================================================================
@@ -567,10 +593,24 @@ export class BagelTycoonEngine {
   private tick(deltaTime: number): void {
     const now = Date.now();
 
-    // Spawn customers every 5 seconds (BT-005)
-    if (now - this.state.lastCustomerSpawn >= TIMING.customerSpawnInterval) {
-      this.spawnCustomer();
-      this.state.lastCustomerSpawn = now;
+    // Customer spawning logic (BT-005, BT-013)
+    if (this.customerSpawningEnabled) {
+      // Check if we need to wait for the first customer delay
+      if (this.firstCustomerSpawnTime !== null) {
+        if (now >= this.firstCustomerSpawnTime) {
+          // First customer delay has passed, spawn the first customer
+          this.spawnCustomer();
+          this.firstCustomerSpawnTime = null; // Clear the flag
+          this.state.lastCustomerSpawn = now; // Start the regular spawn interval
+        }
+        // Otherwise, skip spawning until first customer delay passes
+      } else {
+        // Normal spawning logic: spawn customers every 5 seconds
+        if (now - this.state.lastCustomerSpawn >= TIMING.customerSpawnInterval) {
+          this.spawnCustomer();
+          this.state.lastCustomerSpawn = now;
+        }
+      }
     }
 
     // Update active order progress

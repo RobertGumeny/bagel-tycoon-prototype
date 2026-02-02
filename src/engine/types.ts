@@ -264,6 +264,7 @@ export const TAGLINES = [
 export const TIMING = {
   tickInterval: 100, // Game loop runs every 100ms
   customerSpawnInterval: 5000, // New customer every 5 seconds
+  firstCustomerDelay: 3000, // Initial delay before first customer spawns (3 seconds)
   autoSaveInterval: 5000, // Auto-save every 5 seconds
   maxQueueSize: 5, // Maximum customers in queue
 } as const;

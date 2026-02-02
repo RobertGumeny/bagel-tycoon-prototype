@@ -24,7 +24,7 @@ active_systems:
 known_issues: []
 next_task:
   type: feature
-  id: BT-013
+  id: BT-014
 recent_bugs:
   - id: BUG-003
     issue: "CSS Not Rendering - Missing PostCSS Configuration"
@@ -35,4 +35,4 @@ recent_bugs:
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
-memo_from_last_run: "BT-012 completed: Cash Register Station & Order Automation implemented. Created Register component positioned below ActiveOrder. Implemented Take Order button (calls engine.takeOrder()) and Hire Register Manager button ($250). Visual styling uses dashed border when unautomated, solid card when manager hired. Added 17 component tests. Installed React testing libraries (@testing-library/react, user-event, jest-dom). All 135 tests passing (118 engine + 17 Register). No linter or build errors. Next: BT-013 Queue Spawning Fix."
+memo_from_last_run: "BT-013 completed: Queue Spawning Fix & Delay implemented. Added customer spawning control system with enableCustomerSpawning() method. Implemented 3-second first customer delay. Modified tick() to respect spawning enabled flag and first customer delay. Updated App.tsx to call enableCustomerSpawning() after mount. Added firstCustomerDelay constant (3000ms) to TIMING. Updated 9 customer spawning tests. All 136 tests passing (118 engine + 9 spawning + 9 Register). No linter or build errors. Next: BT-014 Lucide Icon Integration."
