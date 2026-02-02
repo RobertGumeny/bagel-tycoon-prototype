@@ -5,9 +5,10 @@
  * Displays individual station card with locked/unlocked states
  */
 
-import { Lock, Zap, Star, Package, CheckCircle2 } from 'lucide-react';
+import { Lock, Zap, Star, Package, CheckCircle2, Utensils, Refrigerator, Coffee, Beef, Flame } from 'lucide-react';
 import type { StationState } from '../engine/types';
 import { STATION_CONFIGS, STORAGE_CAPS } from '../engine/types';
+import type { LucideIcon } from 'lucide-react';
 
 interface StationCardProps {
   station: StationState;
@@ -24,6 +25,16 @@ const STATION_COLORS: Record<string, { bg: string; text: string; icon: string }>
   slicer: { bg: 'bg-emerald-100', text: 'text-emerald-900', icon: 'text-emerald-700' },
   griddle: { bg: 'bg-orange-100', text: 'text-orange-900', icon: 'text-orange-700' },
   fryer: { bg: 'bg-yellow-100', text: 'text-yellow-900', icon: 'text-yellow-700' },
+};
+
+// Station icon mapping from BT-014
+const STATION_ICONS: Record<string, LucideIcon> = {
+  bagelCase: Utensils,
+  cooler: Refrigerator,
+  beverages: Coffee,
+  slicer: Beef,
+  griddle: Flame,
+  fryer: Zap,
 };
 
 export function StationCard({ station, money, onClick, onUnlock }: StationCardProps) {
@@ -60,14 +71,21 @@ export function StationCard({ station, money, onClick, onUnlock }: StationCardPr
   }
 
   // Unlocked state
+  const StationIcon = STATION_ICONS[station.id] || Utensils;
+
   return (
     <button
       onClick={onClick}
-      className={`${colors.bg} border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all active:scale-95 text-left w-full`}
+      className={`${colors.bg} border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md hover:scale-[0.98] transition-all active:scale-95 text-left w-full`}
     >
       <div className="flex flex-col gap-4">
+        {/* Station Icon */}
+        <div className="flex justify-center">
+          <StationIcon className={`w-12 h-12 ${colors.icon}`} />
+        </div>
+
         {/* Station Name */}
-        <h3 className={`text-lg font-bold ${colors.text} uppercase tracking-wide`}>
+        <h3 className={`text-lg font-bold ${colors.text} uppercase tracking-wide text-center`}>
           {config.name}
         </h3>
 
@@ -102,9 +120,11 @@ export function StationCard({ station, money, onClick, onUnlock }: StationCardPr
           </div>
         )}
 
-        {/* Click Hint */}
-        <div className="text-xs text-slate-500 uppercase tracking-widest mt-1">
-          Click to Manage
+        {/* Manage Button */}
+        <div className="mt-2 pt-4 border-t border-slate-300">
+          <div className="bg-slate-900 text-white px-4 py-2 rounded-xl text-center font-bold uppercase tracking-wide text-sm">
+            Click to Manage
+          </div>
         </div>
       </div>
     </button>

@@ -29,7 +29,7 @@ epics:
           - "Map Lucide icons to stations: BagelCase (Utensils), Cooler (Ice), Beverages (Coffee), Slicer (Beef), Griddle (Flame), Fryer (Zap)."
           - "Refactor 'Click to Manage' text into a distinct, high-contrast button centered at the bottom of the card."
           - "Add hover states (scale-down 0.95) to all station cards to indicate interactivity."
-        status: TODO
+        status: DONE
 
       - id: BT-015
         title: "Sales Ticker & Interactive Ledger"

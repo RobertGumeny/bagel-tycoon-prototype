@@ -24,7 +24,7 @@ active_systems:
 known_issues: []
 next_task:
   type: feature
-  id: BT-014
+  id: BT-015
 recent_bugs:
   - id: BUG-003
     issue: "CSS Not Rendering - Missing PostCSS Configuration"
@@ -35,4 +35,4 @@ recent_bugs:
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
-memo_from_last_run: "BT-013 completed: Queue Spawning Fix & Delay implemented. Added customer spawning control system with enableCustomerSpawning() method. Implemented 3-second first customer delay. Modified tick() to respect spawning enabled flag and first customer delay. Updated App.tsx to call enableCustomerSpawning() after mount. Added firstCustomerDelay constant (3000ms) to TIMING. Updated 9 customer spawning tests. All 136 tests passing (118 engine + 9 spawning + 9 Register). No linter or build errors. Next: BT-014 Lucide Icon Integration."
+memo_from_last_run: "BT-014 completed: Lucide Icon Integration & Button Styling implemented. Added station-specific icons (Utensils, Refrigerator, Coffee, Beef, Flame, Zap) mapped to each station type. Displayed icons prominently at top of station cards. Refactored 'Click to Manage' text into high-contrast button (dark bg, white text) centered at bottom of card with border separator. Added hover:scale-[0.98] to all station cards for interactivity feedback. Centered station names. All 136 tests passing. No linter or build errors. Next: BT-015 Sales Ticker & Interactive Ledger."
