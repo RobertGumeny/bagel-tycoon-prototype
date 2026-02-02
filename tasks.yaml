@@ -48,3 +48,12 @@ epics:
           - "Use a dashed border, muted text, and a '+' prefix for the unlockable ingredient."
           - "Ensure the button correctly disables and greys out if 'Storage Level' capacity is reached."
         status: TODO
+
+      - id: BT-017
+        title: "Register Automation Fix"
+        description: "Fix register automation so that it actually takes orders automatically."
+        requirements:
+          - "Once the register is automated, it should take orders without player input."
+          - "The Take Order button should shrink and be disabled."
+          - "The player should now have the ability to add a 2nd cash register below the first."
+        status: TODO
