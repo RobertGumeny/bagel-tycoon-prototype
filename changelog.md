@@ -10,6 +10,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added - 2026-02-01
 
+#### BT-010: Active Order & Queue UI
+
+- Created CustomerQueue component displaying 5 slots for customer queue:
+  - Emoji avatars rendered from gameState.customerQueue array
+  - Empty slots show subtle gray placeholder circles with dashed borders
+  - Filled slots have amber background with smooth fade-in/slide-in animations
+  - Header displays "CUSTOMER QUEUE (X/5)" with user icon
+  - Uses POS-style card styling with proper rounded corners
+- Created ActiveOrder component with dual states:
+  - Empty state: Centered muted italic text "Welcome to Bagel Tycoon, how can I help you?"
+  - Active state displays:
+    - Customer emoji avatar and order name (combines food + beverage)
+    - Animated progress bar filling smoothly based on 100ms engine tick updates
+    - Progress percentage and time fraction display
+    - Large countdown timer showing remainingTime in seconds
+    - Dark background (slate-800) with light text for visual contrast
+- Updated App.tsx to integrate both components into sidebar:
+  - Replaced placeholder content with CustomerQueue and ActiveOrder components
+  - Added proper spacing between components (gap-6)
+  - Connected to gameState via engine subscription for real-time updates
+- Progress bar updates automatically every 100ms via React subscription to engine state
+- Both components follow existing POS design patterns (Tailwind 4, card styling, rounded-3xl)
+
+**Technical Details:**
+
+- CustomerQueue accepts queue array and optional maxSize prop (defaults to 5)
+- ActiveOrder accepts nullable Order prop for empty/active state switching
+- Progress calculation: `((totalTime - remainingTime) / totalTime) * 100`
+- Order name combines foodRecipe and beverageRecipe names when both present
+- Smooth transitions using Tailwind duration-300 and linear easing for progress bar
+- Uses Lucide React icons (Users, Clock) for visual elements
+
+**Testing:**
+
+- ✅ All 118 unit tests passing (no new tests required for UI components)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Build successful (214.82 KB bundle)
+- ✅ Components render correctly with empty and active states
+- ✅ Progress bar fills smoothly based on engine updates
+
 #### BT-009: POS Layout & Shell
 
 - Installed and configured Tailwind CSS 4 with custom theme

@@ -1,6 +1,6 @@
 /**
  * Main App Component
- * Task: BT-009
+ * Tasks: BT-009, BT-010
  *
  * Manages game engine integration and renders the UI
  */
@@ -10,6 +10,8 @@ import { BagelTycoonEngine } from './engine/BagelTycoonEngine';
 import type { GameState } from './engine/types';
 import { Header } from './components/Header';
 import { Layout } from './components/Layout';
+import { CustomerQueue } from './components/CustomerQueue';
+import { ActiveOrder } from './components/ActiveOrder';
 
 function App() {
   // Initialize engine instance (singleton)
@@ -37,9 +39,9 @@ function App() {
       <div className="flex-1 overflow-hidden">
         <Layout
           sidebar={
-            <div className="text-slate-600">
-              <h2 className="text-xl font-bold mb-4">Sidebar</h2>
-              <p className="text-sm">Customer Queue and Active Order will go here.</p>
+            <div className="flex flex-col gap-6">
+              <CustomerQueue queue={gameState.customerQueue} />
+              <ActiveOrder order={gameState.activeOrder} />
             </div>
           }
           main={

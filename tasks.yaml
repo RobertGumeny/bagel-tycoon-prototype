@@ -103,7 +103,7 @@ epics:
           - "Render 5 slots for CustomerQueue using emoji avatars."
           - "ActiveOrder displays order name, countdown timer, and a progress bar."
           - "Progress bar must fill smoothly based on 100ms engine updates."
-        status: TODO
+        status: DONE
 
       - id: BT-011
         title: "Station Grid & Modals"
