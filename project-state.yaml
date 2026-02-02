@@ -1,6 +1,6 @@
 project_name: Bagel Tycoon
 version: 0.1.0
-current_epic: "EPIC-1: Game Engine Architecture"
+current_epic: "EPIC-2: Core Simulation & Logic"
 last_update: "2026-02-01"
 technical_stack: ["React", "TypeScript", "Vite", "Tailwind", "Lucide React"]
 active_systems:
@@ -11,10 +11,11 @@ active_systems:
     "Observable Pattern",
     "Game Loop",
     "Persistence",
+    "Customer Spawning",
   ]
 known_issues: []
 recent_bugs:
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
-memo_from_last_run: "BT-004 completed: Comprehensive unit test suite for engine core with 68 passing tests covering singleton pattern, observable pattern, state management, station unlocking/upgrades, manager hiring, ingredient unlocking, automation, order management, persistence, and cost calculations. Test infrastructure set up with Vitest. EPIC-1 (Game Engine Architecture) is now complete."
+memo_from_last_run: "BT-006 completed: Dynamic order generation system implemented. Orders now filter recipes by unlocked stations and ingredients, with 60% chance to add beverages. Added RECIPES constant with 27 comprehensive recipes covering all station combinations. Total time calculated as sum of component base times. Added 13 new tests covering recipe filtering, beverage probability, and time calculations. All 92 tests passing. Ready to proceed with BT-007 (Processing Logic)."

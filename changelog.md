@@ -8,6 +8,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added - 2026-02-01
+
+#### BT-006: Dynamic Order Generation
+
+- Implemented comprehensive recipe system with 27 unique recipes:
+  - 19 food recipes covering all station combinations (simple bagels to multi-station deluxe sandwiches)
+  - 8 beverage recipes for the beverage station
+- Implemented dynamic order generation in `generateOrder()` method:
+  - Filters recipes by unlocked stations and ingredients
+  - Randomly selects from available food recipes
+  - 60% probability to add beverage when beverages station is unlocked
+  - Calculates total base time as sum of food and beverage preparation times
+  - Generates unique order IDs using timestamp + counter
+- Updated `takeOrder()` to use new dynamic order generation
+- Added order counter to ensure unique order IDs even when created in rapid succession
+- Added 13 comprehensive unit tests:
+  - Recipe filtering by unlocked stations and ingredients
+  - Beverage addition probability testing (60% chance)
+  - Total time calculation verification
+  - Edge cases (no available recipes, starter recipes only)
+  - Order uniqueness and customer emoji handling
+
+**Technical Details:**
+
+- All recipes defined in `types.ts` as `RECIPES` constant with proper typing
+- Recipe filtering checks both station unlock status and ingredient availability
+- Beverage probability implemented with `Math.random() < 0.6` check
+- Unique stations list generated using Set to avoid duplicates
+- Order counter prevents ID collisions when orders created in tight loops
+
+**Testing:**
+
+- ✅ All 92 unit tests passing (79 previous + 13 new)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Build successful (193.91 KB bundle)
+- ✅ Recipe filtering works correctly for all unlock states
+- ✅ Beverage probability verified across 100 orders (statistical validation)
+
 ### Fixed - 2026-02-01
 
 #### BUG-1: mergeWithDefaults Empty Stations Fix
@@ -184,3 +223,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ✅ ESLint passes with no errors or warnings
 - ✅ Build successful (193.91 KB bundle)
 - ✅ Test coverage for all implemented engine features
+
+#### BT-005: Customer Queue & Spawning
+
+- Implemented automatic customer spawning in game loop:
+  - Added `spawnCustomer()` method to BagelTycoonEngine
+  - Customers spawn every 5 seconds when queue has space
+  - Queue respects maximum size of 5 customers
+  - Spawning integrated into existing `tick()` method
+  - Uses `TIMING.customerSpawnInterval` and `TIMING.maxQueueSize` constants
+  - Updates `lastCustomerSpawn` timestamp for proper timing
+- Customer spawning features:
+  - Random emoji selection from `CUSTOMER_EMOJIS` pool via `getRandomCustomer()`
+  - Automatic spawning stops when queue is full
+  - Resumes spawning after queue has space (e.g., after takeOrder)
+  - Customers stored as emoji string IDs in queue array
+- Verified existing `takeOrder()` functionality:
+  - Properly shifts customers from queue (FIFO)
+  - Creates active order with customer emoji
+  - Validates queue state before taking order
+- Added comprehensive test suite with 8 new tests:
+  - Customer spawns after 5 seconds
+  - Multiple customers spawn at regular intervals
+  - Queue never exceeds 5 customers
+  - Spawning stops when full and resumes when space available
+  - Customers use emojis from CUSTOMER_EMOJIS constant
+  - No spawning before 5-second interval elapses
+
+**Technical Details:**
+
+- Customer spawning integrated into 100ms game loop tick
+- Time-based spawning using `Date.now()` and `lastCustomerSpawn` comparison
+- Queue size validation prevents overflow
+- Tests use Vitest fake timers with `vi.useFakeTimers()` and `vi.useRealTimers()`
+- Timer advancement properly triggers game loop intervals
+
+**Testing:**
+
+- ✅ All 79 unit tests passing (71 previous + 8 new)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Customer spawning verified at correct intervals
+- ✅ Queue size limits enforced correctly

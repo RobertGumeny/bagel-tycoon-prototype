@@ -275,3 +275,255 @@ export const PRESTIGE = {
   threshold: 10000, // $10,000 total earnings to unlock prestige
   incomeBonus: 0.10, // +10% income per prestige level
 } as const;
+
+/**
+ * All available recipes in the game
+ * Organized by category (food and beverage)
+ */
+export const RECIPES: Recipe[] = [
+  // ============================================================================
+  // Food Recipes
+  // ============================================================================
+
+  // Bagel Case Only
+  {
+    id: 'plainBagel',
+    name: 'Plain Bagel',
+    category: 'food',
+    requiredStations: ['bagelCase'],
+    requiredIngredients: ['plainBagel'],
+    basePrice: 1.50,
+    baseTime: 2,
+  },
+  {
+    id: 'everythingBagel',
+    name: 'Everything Bagel',
+    category: 'food',
+    requiredStations: ['bagelCase'],
+    requiredIngredients: ['everythingBagel'],
+    basePrice: 2.00,
+    baseTime: 2,
+  },
+  {
+    id: 'sesameBagel',
+    name: 'Sesame Bagel',
+    category: 'food',
+    requiredStations: ['bagelCase'],
+    requiredIngredients: ['sesameBagel'],
+    basePrice: 2.00,
+    baseTime: 2,
+  },
+
+  // Bagel Case + Cooler
+  {
+    id: 'bagelWithButter',
+    name: 'Bagel with Butter',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler'],
+    requiredIngredients: ['plainBagel', 'butter'],
+    basePrice: 2.50,
+    baseTime: 3,
+  },
+  {
+    id: 'bagelWithCreamCheese',
+    name: 'Bagel with Cream Cheese',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler'],
+    requiredIngredients: ['plainBagel', 'plainCreamCheese'],
+    basePrice: 3.00,
+    baseTime: 3,
+  },
+  {
+    id: 'everythingBagelSchmear',
+    name: 'Everything Bagel w/ Schmear',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler'],
+    requiredIngredients: ['everythingBagel', 'plainCreamCheese'],
+    basePrice: 4.00,
+    baseTime: 5,
+  },
+  {
+    id: 'veggieBagel',
+    name: 'Veggie Bagel',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler'],
+    requiredIngredients: ['everythingBagel', 'veggieCreamCheese'],
+    basePrice: 4.50,
+    baseTime: 5,
+  },
+  {
+    id: 'loxBagel',
+    name: 'Lox Bagel',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler'],
+    requiredIngredients: ['sesameBagel', 'loxCreamCheese'],
+    basePrice: 6.00,
+    baseTime: 6,
+  },
+
+  // Bagel Case + Cooler + Slicer
+  {
+    id: 'turkeySandwich',
+    name: 'Turkey Sandwich',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler', 'slicer'],
+    requiredIngredients: ['plainBagel', 'plainCreamCheese', 'slicedTurkey'],
+    basePrice: 9.50,
+    baseTime: 10,
+  },
+  {
+    id: 'hamSandwich',
+    name: 'Ham Sandwich',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler', 'slicer'],
+    requiredIngredients: ['sesameBagel', 'butter', 'slicedHam'],
+    basePrice: 9.00,
+    baseTime: 10,
+  },
+  {
+    id: 'roastBeefSandwich',
+    name: 'Roast Beef Sandwich',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler', 'slicer'],
+    requiredIngredients: ['everythingBagel', 'plainCreamCheese', 'roastBeef'],
+    basePrice: 10.50,
+    baseTime: 11,
+  },
+  {
+    id: 'pastramiSandwich',
+    name: 'Pastrami Sandwich',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler', 'slicer'],
+    requiredIngredients: ['onionBagel', 'plainCreamCheese', 'pastrami'],
+    basePrice: 11.00,
+    baseTime: 11,
+  },
+
+  // Bagel Case + Cooler + Griddle
+  {
+    id: 'eggSandwich',
+    name: 'Egg Sandwich',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler', 'griddle'],
+    requiredIngredients: ['plainBagel', 'butter', 'friedEgg'],
+    basePrice: 6.50,
+    baseTime: 8,
+  },
+  {
+    id: 'baconEggCheese',
+    name: 'Bacon Egg & Cheese',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler', 'griddle'],
+    requiredIngredients: ['everythingBagel', 'plainCreamCheese', 'baconStrips'],
+    basePrice: 10.00,
+    baseTime: 12,
+  },
+  {
+    id: 'sausageEggSandwich',
+    name: 'Sausage Egg Sandwich',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler', 'griddle'],
+    requiredIngredients: ['sesameBagel', 'butter', 'sausagePatty'],
+    basePrice: 9.00,
+    baseTime: 10,
+  },
+
+  // Bagel Case + Cooler + Fryer
+  {
+    id: 'hashBrownBagel',
+    name: 'Hash Brown Bagel',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler', 'fryer'],
+    requiredIngredients: ['plainBagel', 'butter', 'hashBrowns'],
+    basePrice: 5.50,
+    baseTime: 8,
+  },
+
+  // Bagel Case + Cooler + Slicer + Griddle
+  {
+    id: 'deluxeBreakfast',
+    name: 'Deluxe Breakfast Sandwich',
+    category: 'food',
+    requiredStations: ['bagelCase', 'cooler', 'slicer', 'griddle'],
+    requiredIngredients: ['everythingBagel', 'plainCreamCheese', 'bacon', 'friedEgg'],
+    basePrice: 12.50,
+    baseTime: 15,
+  },
+
+  // ============================================================================
+  // Beverage Recipes
+  // ============================================================================
+
+  {
+    id: 'hotCoffee',
+    name: 'Hot Coffee',
+    category: 'beverage',
+    requiredStations: ['beverages'],
+    requiredIngredients: ['coffee'],
+    basePrice: 2.00,
+    baseTime: 3,
+  },
+  {
+    id: 'hotTea',
+    name: 'Hot Tea',
+    category: 'beverage',
+    requiredStations: ['beverages'],
+    requiredIngredients: ['tea'],
+    basePrice: 1.50,
+    baseTime: 2,
+  },
+  {
+    id: 'espresso',
+    name: 'Espresso',
+    category: 'beverage',
+    requiredStations: ['beverages'],
+    requiredIngredients: ['espresso'],
+    basePrice: 2.50,
+    baseTime: 2,
+  },
+  {
+    id: 'latte',
+    name: 'Latte',
+    category: 'beverage',
+    requiredStations: ['beverages'],
+    requiredIngredients: ['latte'],
+    basePrice: 3.50,
+    baseTime: 4,
+  },
+  {
+    id: 'cappuccino',
+    name: 'Cappuccino',
+    category: 'beverage',
+    requiredStations: ['beverages'],
+    requiredIngredients: ['cappuccino'],
+    basePrice: 3.50,
+    baseTime: 4,
+  },
+  {
+    id: 'orangeJuice',
+    name: 'Orange Juice',
+    category: 'beverage',
+    requiredStations: ['beverages'],
+    requiredIngredients: ['orangeJuice'],
+    basePrice: 2.50,
+    baseTime: 1,
+  },
+  {
+    id: 'appleCider',
+    name: 'Apple Cider',
+    category: 'beverage',
+    requiredStations: ['beverages'],
+    requiredIngredients: ['appleCider'],
+    basePrice: 3.00,
+    baseTime: 3,
+  },
+  {
+    id: 'hotChocolate',
+    name: 'Hot Chocolate',
+    category: 'beverage',
+    requiredStations: ['beverages'],
+    requiredIngredients: ['hotChocolate'],
+    basePrice: 2.50,
+    baseTime: 3,
+  },
+] as const;

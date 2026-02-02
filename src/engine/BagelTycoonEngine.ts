@@ -20,6 +20,7 @@ import {
   BASE_COSTS,
   CUSTOMER_EMOJIS,
   TIMING,
+  RECIPES,
 } from './types';
 
 /**
@@ -44,6 +45,9 @@ export class BagelTycoonEngine {
   private tickIntervalId: ReturnType<typeof setInterval> | null = null;
   private lastTickTime: number = performance.now();
   private isRunning: boolean = false;
+
+  // Order ID counter for uniqueness
+  private orderCounter: number = 0;
 
   /**
    * Private constructor enforces singleton pattern
@@ -475,25 +479,15 @@ export class BagelTycoonEngine {
       return false;
     }
 
-    // Create placeholder order (actual order generation in BT-005)
-    // For now, create a minimal order structure
-    const order: Order = {
-      id: `order-${Date.now()}`,
-      customerName: customer,
-      foodRecipe: {
-        id: 'plainBagel',
-        name: 'Plain Bagel',
-        category: 'food',
-        requiredStations: ['bagelCase'],
-        requiredIngredients: ['plainBagel'],
-        basePrice: 1.50,
-        baseTime: 2,
-      },
-      startTime: Date.now(),
-      totalTime: 2,
-      remainingTime: 2,
-      stationsInvolved: ['bagelCase'],
-    };
+    // Generate order based on unlocked stations and ingredients (BT-006)
+    const order = this.generateOrder(customer);
+
+    if (!order) {
+      console.warn('No available recipes to fulfill order');
+      // Put customer back in queue if no recipes available
+      this.state.customerQueue.unshift(customer);
+      return false;
+    }
 
     this.state.activeOrder = order;
     this.notify();
@@ -555,6 +549,12 @@ export class BagelTycoonEngine {
   private tick(deltaTime: number): void {
     const now = Date.now();
 
+    // Spawn customers every 5 seconds (BT-005)
+    if (now - this.state.lastCustomerSpawn >= TIMING.customerSpawnInterval) {
+      this.spawnCustomer();
+      this.state.lastCustomerSpawn = now;
+    }
+
     // Update active order progress
     if (this.state.activeOrder) {
       this.state.activeOrder.remainingTime -= deltaTime;
@@ -573,6 +573,103 @@ export class BagelTycoonEngine {
 
     // Notify subscribers of state changes
     this.notify();
+  }
+
+  /**
+   * Generate an order based on currently unlocked stations and ingredients
+   * BT-006: Dynamic Order Generation
+   * @param customerName The customer emoji for this order
+   * @returns Generated order or null if no recipes available
+   */
+  private generateOrder(customerName: string): Order | null {
+    // Filter food recipes by unlocked status
+    const availableFoodRecipes = RECIPES.filter(recipe => {
+      if (recipe.category !== 'food') return false;
+
+      // Check if all required stations are unlocked
+      const allStationsUnlocked = recipe.requiredStations.every(stationId => {
+        const station = this.state.stations.get(stationId);
+        return station?.unlocked ?? false;
+      });
+
+      if (!allStationsUnlocked) return false;
+
+      // Check if all required ingredients are unlocked
+      const allIngredientsUnlocked = recipe.requiredIngredients.every(ingredientId => {
+        // Find which station(s) have this ingredient
+        for (const stationId of recipe.requiredStations) {
+          const station = this.state.stations.get(stationId);
+          if (station?.unlockedIngredients.includes(ingredientId)) {
+            return true;
+          }
+        }
+        return false;
+      });
+
+      return allIngredientsUnlocked;
+    });
+
+    // No available food recipes
+    if (availableFoodRecipes.length === 0) {
+      return null;
+    }
+
+    // Randomly select a food recipe
+    const foodRecipe = availableFoodRecipes[
+      Math.floor(Math.random() * availableFoodRecipes.length)
+    ];
+
+    // Check if beverages station is unlocked
+    const beveragesStation = this.state.stations.get('beverages');
+    let beverageRecipe: typeof RECIPES[number] | undefined = undefined;
+
+    if (beveragesStation?.unlocked) {
+      // 60% chance to add a beverage
+      if (Math.random() < 0.6) {
+        // Filter available beverage recipes
+        const availableBeverages = RECIPES.filter(recipe => {
+          if (recipe.category !== 'beverage') return false;
+
+          // Check if all required ingredients are unlocked
+          return recipe.requiredIngredients.every(ingredientId =>
+            beveragesStation.unlockedIngredients.includes(ingredientId)
+          );
+        });
+
+        // Select random beverage if any available
+        if (availableBeverages.length > 0) {
+          beverageRecipe = availableBeverages[
+            Math.floor(Math.random() * availableBeverages.length)
+          ];
+        }
+      }
+    }
+
+    // Calculate total base time (sum of food + beverage times)
+    const totalTime = foodRecipe.baseTime + (beverageRecipe?.baseTime ?? 0);
+
+    // Get all unique stations involved
+    const stationsInvolved = [
+      ...new Set([
+        ...foodRecipe.requiredStations,
+        ...(beverageRecipe?.requiredStations ?? []),
+      ]),
+    ];
+
+    // Create order with unique ID
+    this.orderCounter++;
+    const order: Order = {
+      id: `order-${Date.now()}-${this.orderCounter}`,
+      customerName,
+      foodRecipe,
+      beverageRecipe,
+      startTime: Date.now(),
+      totalTime,
+      remainingTime: totalTime,
+      stationsInvolved,
+    };
+
+    return order;
   }
 
   /**
@@ -596,6 +693,21 @@ export class BagelTycoonEngine {
     this.state.activeOrder = null;
 
     console.log(`Order completed: ${order.foodRecipe.name}, earned $${basePrice.toFixed(2)}`);
+  }
+
+  /**
+   * Spawn a new customer in the queue
+   * BT-005: Customer spawning logic
+   */
+  private spawnCustomer(): void {
+    // Don't spawn if queue is full
+    if (this.state.customerQueue.length >= TIMING.maxQueueSize) {
+      return;
+    }
+
+    // Add random customer emoji to queue
+    const customer = this.getRandomCustomer();
+    this.state.customerQueue.push(customer);
   }
 
   // ============================================================================

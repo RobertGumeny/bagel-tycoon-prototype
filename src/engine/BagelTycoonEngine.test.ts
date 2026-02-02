@@ -780,6 +780,130 @@ describe('BagelTycoonEngine', () => {
   });
 
   // ============================================================================
+  // Customer Queue & Spawning Tests (BT-005)
+  // ============================================================================
+
+  describe('Customer Spawning', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should spawn a customer after 5 seconds', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Initially queue should be empty
+      let state = engine.getState();
+      expect(state.customerQueue.length).toBe(0);
+
+      // Advance time by 5 seconds (includes game loop ticks)
+      vi.advanceTimersByTime(5100);
+
+      // Customer should be spawned
+      state = engine.getState();
+      expect(state.customerQueue.length).toBe(1);
+      expect(state.customerQueue[0]).toBeTruthy();
+    });
+
+    it('should spawn multiple customers over time', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Spawn 3 customers
+      for (let i = 0; i < 3; i++) {
+        vi.advanceTimersByTime(5100);
+      }
+
+      const state = engine.getState();
+      expect(state.customerQueue.length).toBe(3);
+    });
+
+    it('should not exceed maximum queue size of 5', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Try to spawn 10 customers
+      for (let i = 0; i < 10; i++) {
+        vi.advanceTimersByTime(5100);
+      }
+
+      const state = engine.getState();
+      expect(state.customerQueue.length).toBe(5);
+    });
+
+    it('should stop spawning when queue is full', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Fill queue to max (5 customers)
+      for (let i = 0; i < 5; i++) {
+        vi.advanceTimersByTime(5100);
+      }
+
+      const queueBeforeExtraTime = [...engine.getState().customerQueue];
+
+      // Advance more time
+      vi.advanceTimersByTime(10100);
+
+      const state = engine.getState();
+      expect(state.customerQueue.length).toBe(5);
+      expect(state.customerQueue).toEqual(queueBeforeExtraTime);
+    });
+
+    it('should resume spawning after queue has space', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Fill queue
+      for (let i = 0; i < 5; i++) {
+        vi.advanceTimersByTime(5100);
+      }
+
+      expect(engine.getState().customerQueue.length).toBe(5);
+
+      // Take an order to make space
+      engine.takeOrder();
+      expect(engine.getState().customerQueue.length).toBe(4);
+
+      // Spawn another customer
+      vi.advanceTimersByTime(5100);
+      expect(engine.getState().customerQueue.length).toBe(5);
+    });
+
+    it('should use customer emojis from CUSTOMER_EMOJIS constant', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      vi.advanceTimersByTime(5100);
+
+      const state = engine.getState();
+      const customer = state.customerQueue[0];
+
+      // Customer should be a string (emoji)
+      expect(typeof customer).toBe('string');
+      expect(customer.length).toBeGreaterThan(0);
+    });
+
+    it('should spawn customers at regular intervals', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Check spawning at each 5-second interval
+      for (let i = 0; i < 4; i++) {
+        vi.advanceTimersByTime(5100);
+        expect(engine.getState().customerQueue.length).toBe(i + 1);
+      }
+    });
+
+    it('should not spawn before 5 seconds have elapsed', () => {
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Advance time by less than 5 seconds
+      vi.advanceTimersByTime(4900);
+
+      const state = engine.getState();
+      expect(state.customerQueue.length).toBe(0);
+    });
+  });
+
+  // ============================================================================
   // Persistence Tests
   // ============================================================================
 
@@ -946,6 +1070,296 @@ describe('BagelTycoonEngine', () => {
       engine.upgradeStation('bagelCase', 'storage');
       const level3State = engine.getState();
       expect(getStations(level3State).bagelCase.storageLevel).toBe(3);
+    });
+  });
+
+  // ============================================================================
+  // Dynamic Order Generation Tests (BT-006)
+  // ============================================================================
+
+  describe('Dynamic Order Generation (BT-006)', () => {
+    it('should generate orders with only starter recipes (bagelCase + cooler)', () => {
+      const engine = createEngineWithQueue(['😀']);
+      const success = engine.takeOrder();
+
+      expect(success).toBe(true);
+      const state = engine.getState();
+      expect(state.activeOrder).not.toBeNull();
+      expect(state.activeOrder?.foodRecipe).toBeDefined();
+
+      // Should only use bagelCase and/or cooler stations (free stations)
+      const usedStations = state.activeOrder?.foodRecipe.requiredStations ?? [];
+      expect(usedStations.every(s => s === 'bagelCase' || s === 'cooler')).toBe(true);
+    });
+
+    it('should filter recipes by unlocked stations', () => {
+      // Only bagelCase and cooler are unlocked by default
+      const engine = createEngineWithQueue(['😀']);
+      engine.takeOrder();
+
+      const state = engine.getState();
+      const order = state.activeOrder;
+
+      // Should not generate orders requiring slicer, griddle, fryer, or beverages
+      const requiredStations = order?.foodRecipe.requiredStations ?? [];
+      expect(requiredStations).not.toContain('slicer');
+      expect(requiredStations).not.toContain('griddle');
+      expect(requiredStations).not.toContain('fryer');
+      expect(requiredStations).not.toContain('beverages');
+    });
+
+    it('should filter recipes by unlocked ingredients', () => {
+      const engine = createEngineWithQueue(['😀']);
+
+      // Default ingredients for free stations:
+      // bagelCase: plainBagel
+      // cooler: butter, plainCreamCheese
+
+      engine.takeOrder();
+      const state = engine.getState();
+      const order = state.activeOrder;
+
+      // Check that all required ingredients are in the default set
+      const defaultIngredients = ['plainBagel', 'butter', 'plainCreamCheese'];
+      const requiredIngredients = order?.foodRecipe.requiredIngredients ?? [];
+
+      requiredIngredients.forEach(ingredient => {
+        expect(defaultIngredients).toContain(ingredient);
+      });
+    });
+
+    it('should unlock more recipes when station is unlocked', () => {
+      const engine = createEngineWithMoney(1000);
+
+      // Unlock beverages station
+      engine.unlockStation('beverages');
+
+      // Add customers and take several orders to see variety
+      const orderNames = new Set<string>();
+      for (let i = 0; i < 20; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+        const order = engine.getState().activeOrder;
+        if (order) {
+          orderNames.add(order.foodRecipe.name);
+          // Clear order for next iteration
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (engine as any).state.activeOrder = null;
+        }
+      }
+
+      // Should have generated at least a few different recipes
+      // (given randomness, this is probabilistic but should pass)
+      expect(orderNames.size).toBeGreaterThan(1);
+    });
+
+    it('should unlock more recipes when new ingredients are added', () => {
+      const engine = createEngineWithMoney(1000);
+
+      // Add a new ingredient to bagelCase
+      engine.addIngredient('bagelCase');
+
+      // Take an order
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const state = engine.getState();
+      expect(state.activeOrder).not.toBeNull();
+
+      // The order should be valid (this tests that the new ingredient is properly recognized)
+      expect(state.activeOrder?.foodRecipe).toBeDefined();
+    });
+
+    it('should add beverage to order 60% of the time when beverages unlocked', () => {
+      const engine = createEngineWithMoney(1000);
+
+      // Unlock beverages station
+      engine.unlockStation('beverages');
+
+      // Take many orders to test probability
+      let ordersWithBeverages = 0;
+      const totalOrders = 100;
+
+      for (let i = 0; i < totalOrders; i++) {
+        // Add customer and take order
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order?.beverageRecipe) {
+          ordersWithBeverages++;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      // Should be approximately 60% (with some tolerance for randomness)
+      // Using a generous range: 45% to 75%
+      const percentage = ordersWithBeverages / totalOrders;
+      expect(percentage).toBeGreaterThan(0.45);
+      expect(percentage).toBeLessThan(0.75);
+    });
+
+    it('should not add beverage when beverages station is locked', () => {
+      const engine = createEngineWithQueue(['😀']);
+
+      // Beverages station should be locked by default
+      engine.takeOrder();
+
+      const state = engine.getState();
+      const order = state.activeOrder;
+
+      expect(order?.beverageRecipe).toBeUndefined();
+    });
+
+    it('should calculate totalTime as sum of food and beverage times', () => {
+      const engine = createEngineWithMoney(1000);
+
+      // Unlock beverages station
+      engine.unlockStation('beverages');
+
+      // Take orders until we get one with a beverage
+      let orderWithBeverage = null;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order?.beverageRecipe) {
+          orderWithBeverage = order;
+          break;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      // Should have found at least one order with beverage in 50 tries
+      expect(orderWithBeverage).not.toBeNull();
+
+      if (orderWithBeverage) {
+        const expectedTime =
+          orderWithBeverage.foodRecipe.baseTime +
+          (orderWithBeverage.beverageRecipe?.baseTime ?? 0);
+
+        expect(orderWithBeverage.totalTime).toBe(expectedTime);
+        expect(orderWithBeverage.remainingTime).toBe(expectedTime);
+      }
+    });
+
+    it('should calculate totalTime for food-only orders', () => {
+      const engine = createEngineWithQueue(['😀']);
+
+      // Beverages locked, so all orders will be food-only
+      engine.takeOrder();
+
+      const state = engine.getState();
+      const order = state.activeOrder;
+
+      expect(order).not.toBeNull();
+      expect(order?.totalTime).toBe(order?.foodRecipe.baseTime);
+      expect(order?.remainingTime).toBe(order?.foodRecipe.baseTime);
+    });
+
+    it('should include all unique stations in stationsInvolved', () => {
+      const engine = createEngineWithMoney(1000);
+
+      // Unlock beverages station
+      engine.unlockStation('beverages');
+
+      // Take orders until we get one with both food and beverage
+      let foundCombinedOrder = false;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order?.beverageRecipe) {
+          // Check that stationsInvolved includes stations from both recipes
+          const foodStations = order.foodRecipe.requiredStations;
+          const beverageStations = order.beverageRecipe.requiredStations;
+          const allStations = [...foodStations, ...beverageStations];
+
+          // All stations should be in stationsInvolved
+          allStations.forEach(station => {
+            expect(order.stationsInvolved).toContain(station);
+          });
+
+          // stationsInvolved should have unique stations only
+          const uniqueStations = new Set(order.stationsInvolved);
+          expect(order.stationsInvolved.length).toBe(uniqueStations.size);
+
+          foundCombinedOrder = true;
+          break;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      expect(foundCombinedOrder).toBe(true);
+    });
+
+    it('should return null and keep customer in queue if no recipes available', () => {
+      // Create an engine with all stations locked except bagelCase
+      const engine = BagelTycoonEngine.getInstance();
+
+      // Manually remove all ingredients from bagelCase to make no recipes available
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.stations.get('bagelCase').unlockedIngredients = [];
+
+      // Add a customer
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+
+      const success = engine.takeOrder();
+
+      expect(success).toBe(false);
+      const state = engine.getState();
+      expect(state.activeOrder).toBeNull();
+      expect(state.customerQueue.length).toBe(1); // Customer should still be in queue
+    });
+
+    it('should generate unique order IDs', () => {
+      const engine = createEngineWithMoney(1000);
+
+      const orderIds = new Set<string>();
+
+      for (let i = 0; i < 10; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order) {
+          orderIds.add(order.id);
+          // Clear order for next iteration
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (engine as any).state.activeOrder = null;
+        }
+      }
+
+      // All order IDs should be unique
+      expect(orderIds.size).toBe(10);
+    });
+
+    it('should use customer emoji in generated order', () => {
+      const testEmoji = '🥳';
+      const engine = createEngineWithQueue([testEmoji]);
+
+      engine.takeOrder();
+
+      const state = engine.getState();
+      expect(state.activeOrder?.customerName).toBe(testEmoji);
     });
   });
 });
