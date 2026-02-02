@@ -791,17 +791,33 @@ describe('BagelTycoonEngine', () => {
       vi.useRealTimers();
     });
 
-    it('should spawn a customer after 5 seconds', () => {
+    it('should not spawn customers until spawning is enabled (BT-013)', () => {
       const engine = BagelTycoonEngine.getInstance();
 
       // Initially queue should be empty
       let state = engine.getState();
       expect(state.customerQueue.length).toBe(0);
 
-      // Advance time by 5 seconds (includes game loop ticks)
+      // Advance time by 5 seconds without enabling spawning
       vi.advanceTimersByTime(5100);
 
-      // Customer should be spawned
+      // No customer should be spawned
+      state = engine.getState();
+      expect(state.customerQueue.length).toBe(0);
+    });
+
+    it('should spawn first customer after initial delay of 3 seconds (BT-013)', () => {
+      const engine = BagelTycoonEngine.getInstance();
+      engine.enableCustomerSpawning();
+
+      // Initially queue should be empty
+      let state = engine.getState();
+      expect(state.customerQueue.length).toBe(0);
+
+      // Advance time by first customer delay (3 seconds)
+      vi.advanceTimersByTime(3100);
+
+      // First customer should be spawned
       state = engine.getState();
       expect(state.customerQueue.length).toBe(1);
       expect(state.customerQueue[0]).toBeTruthy();
@@ -809,21 +825,30 @@ describe('BagelTycoonEngine', () => {
 
     it('should spawn multiple customers over time', () => {
       const engine = BagelTycoonEngine.getInstance();
+      engine.enableCustomerSpawning();
 
-      // Spawn 3 customers
-      for (let i = 0; i < 3; i++) {
-        vi.advanceTimersByTime(5100);
-      }
+      // First customer after 3 seconds
+      vi.advanceTimersByTime(3100);
+      expect(engine.getState().customerQueue.length).toBe(1);
 
+      // Subsequent customers every 5 seconds
+      vi.advanceTimersByTime(5100);
+      expect(engine.getState().customerQueue.length).toBe(2);
+
+      vi.advanceTimersByTime(5100);
       const state = engine.getState();
       expect(state.customerQueue.length).toBe(3);
     });
 
     it('should not exceed maximum queue size of 5', () => {
       const engine = BagelTycoonEngine.getInstance();
+      engine.enableCustomerSpawning();
 
-      // Try to spawn 10 customers
-      for (let i = 0; i < 10; i++) {
+      // First customer after 3 seconds
+      vi.advanceTimersByTime(3100);
+
+      // Try to spawn 9 more customers (total 10 attempts)
+      for (let i = 0; i < 9; i++) {
         vi.advanceTimersByTime(5100);
       }
 
@@ -833,9 +858,13 @@ describe('BagelTycoonEngine', () => {
 
     it('should stop spawning when queue is full', () => {
       const engine = BagelTycoonEngine.getInstance();
+      engine.enableCustomerSpawning();
 
-      // Fill queue to max (5 customers)
-      for (let i = 0; i < 5; i++) {
+      // First customer after 3 seconds
+      vi.advanceTimersByTime(3100);
+
+      // Fill queue to max (4 more customers = 5 total)
+      for (let i = 0; i < 4; i++) {
         vi.advanceTimersByTime(5100);
       }
 
@@ -851,9 +880,13 @@ describe('BagelTycoonEngine', () => {
 
     it('should resume spawning after queue has space', () => {
       const engine = BagelTycoonEngine.getInstance();
+      engine.enableCustomerSpawning();
 
-      // Fill queue
-      for (let i = 0; i < 5; i++) {
+      // First customer after 3 seconds
+      vi.advanceTimersByTime(3100);
+
+      // Fill queue (4 more = 5 total)
+      for (let i = 0; i < 4; i++) {
         vi.advanceTimersByTime(5100);
       }
 
@@ -870,8 +903,10 @@ describe('BagelTycoonEngine', () => {
 
     it('should use customer emojis from CUSTOMER_EMOJIS constant', () => {
       const engine = BagelTycoonEngine.getInstance();
+      engine.enableCustomerSpawning();
 
-      vi.advanceTimersByTime(5100);
+      // Wait for first customer (3 seconds)
+      vi.advanceTimersByTime(3100);
 
       const state = engine.getState();
       const customer = state.customerQueue[0];
@@ -883,19 +918,25 @@ describe('BagelTycoonEngine', () => {
 
     it('should spawn customers at regular intervals', () => {
       const engine = BagelTycoonEngine.getInstance();
+      engine.enableCustomerSpawning();
+
+      // First customer after 3 seconds
+      vi.advanceTimersByTime(3100);
+      expect(engine.getState().customerQueue.length).toBe(1);
 
       // Check spawning at each 5-second interval
-      for (let i = 0; i < 4; i++) {
+      for (let i = 1; i < 4; i++) {
         vi.advanceTimersByTime(5100);
         expect(engine.getState().customerQueue.length).toBe(i + 1);
       }
     });
 
-    it('should not spawn before 5 seconds have elapsed', () => {
+    it('should not spawn before first customer delay has elapsed (BT-013)', () => {
       const engine = BagelTycoonEngine.getInstance();
+      engine.enableCustomerSpawning();
 
-      // Advance time by less than 5 seconds
-      vi.advanceTimersByTime(4900);
+      // Advance time by less than 3 seconds (first customer delay)
+      vi.advanceTimersByTime(2900);
 
       const state = engine.getState();
       expect(state.customerQueue.length).toBe(0);

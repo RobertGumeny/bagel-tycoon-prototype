@@ -20,7 +20,7 @@ epics:
           - "Modify Engine initialization to start with an empty queue."
           - "Ensure the 5-second spawn timer only starts ticking after the game is mounted/hydrated."
           - "Add a 'First Customer' delay so the player isn't overwhelmed in the first 1 second of play."
-        status: TODO
+        status: DONE
 
       - id: BT-014
         title: "Lucide Icon Integration & Button Styling"

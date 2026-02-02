@@ -20,8 +20,11 @@ function App() {
   const [engine] = useState(() => BagelTycoonEngine.getInstance());
   const [gameState, setGameState] = useState<GameState>(engine.getState());
 
-  // Subscribe to engine state changes
+  // Subscribe to engine state changes and enable customer spawning (BT-013)
   useEffect(() => {
+    // Enable customer spawning after component is mounted
+    engine.enableCustomerSpawning();
+
     const unsubscribe = engine.subscribe((newState) => {
       setGameState(newState);
     });
