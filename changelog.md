@@ -266,6 +266,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed - 2026-02-01
 
+#### BUG-002: getState() Map Type Preservation
+
+- Fixed `getState()` method in BagelTycoonEngine to preserve Map type when returning state to React components
+- StationGrid and other components can now use `.get()` method on stations Map without runtime errors
+- Updated test helper to convert Map to object for easier test assertions
+- All 118 unit tests passing with no regressions
+
+**Technical Details:**
+
+- Modified `getState()` to create new Map instance with cloned station values
+- Proper deep cloning of all nested arrays and objects (unlockedIngredients, activeOrder, etc.)
+- Preserves Map type compatibility with GameState interface
+- Updated test helper `getStations()` to use `Object.fromEntries()` for test access
+
 #### BUG-1: mergeWithDefaults Empty Stations Fix
 
 - Fixed `mergeWithDefaults()` method in BagelTycoonEngine to preserve default stations when partial state doesn't include them

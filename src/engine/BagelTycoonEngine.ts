@@ -126,11 +126,26 @@ export class BagelTycoonEngine {
    * Get read-only copy of current state
    */
   public getState(): Readonly<GameState> {
+    // Clone the stations Map while preserving Map type
+    const clonedStations = new Map<string, StationState>();
+    this.state.stations.forEach((station, key) => {
+      clonedStations.set(key, { ...station, unlockedIngredients: [...station.unlockedIngredients] });
+    });
+
     // Return a deep clone to prevent external mutation
-    return JSON.parse(JSON.stringify({
+    return {
       ...this.state,
-      stations: Object.fromEntries(this.state.stations),
-    }));
+      stations: clonedStations,
+      customerQueue: [...this.state.customerQueue],
+      salesHistory: this.state.salesHistory.map(sale => ({ ...sale })),
+      prestigePerks: [...this.state.prestigePerks],
+      activeOrder: this.state.activeOrder ? {
+        ...this.state.activeOrder,
+        foodRecipe: { ...this.state.activeOrder.foodRecipe },
+        beverageRecipe: this.state.activeOrder.beverageRecipe ? { ...this.state.activeOrder.beverageRecipe } : undefined,
+        stationsInvolved: [...this.state.activeOrder.stationsInvolved],
+      } : null,
+    } as Readonly<GameState>;
   }
 
   // ============================================================================
