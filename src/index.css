@@ -49,11 +49,11 @@
   }
 
   .btn-primary {
-    @apply btn bg-blue-600 text-white hover:bg-blue-700;
+    @apply rounded-3xl px-6 py-3 font-bold uppercase tracking-wide transition-transform active:scale-95 bg-blue-600 text-white hover:bg-blue-700;
   }
 
   .btn-disabled {
-    @apply btn bg-gray-300 text-gray-500 cursor-not-allowed;
+    @apply rounded-3xl px-6 py-3 font-bold uppercase tracking-wide transition-transform active:scale-95 bg-gray-300 text-gray-500 cursor-not-allowed;
   }
 
   /* Card styling */

@@ -1,6 +1,6 @@
 project_name: Bagel Tycoon
 version: 0.1.0
-current_epic: "EPIC-3: React UI Layer (POS Style)"
+current_epic: "EPIC-4: Playtest Refinements & POS Polish"
 last_update: "2026-02-01"
 technical_stack: ["React", "TypeScript", "Vite", "Tailwind 4", "Lucide React"]
 active_systems:
@@ -26,10 +26,13 @@ next_task:
   type: feature
   id: BT-012
 recent_bugs:
+  - id: BUG-003
+    issue: "CSS Not Rendering - Missing PostCSS Configuration"
+    fix: "Added postcss.config.js with @tailwindcss/postcss plugin for Tailwind v4 CSS processing"
   - id: BUG-002
     issue: "getState() Returns Object Instead of Map for Stations"
     fix: "Modified getState() to preserve Map type when cloning, preventing runtime errors in React components"
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
-memo_from_last_run: "BT-011 completed: Station Grid & Modals implemented. Created StationCard component showing locked/unlocked states with color-coded styling per PRD palette. Created StationGrid component with 2x3 grid layout for all 6 stations. Created StationModal component with 2-column upgrade layout (Equipment/Quality), manager hiring, storage upgrades, and ingredient management with tags. All buttons hide when player lacks sufficient funds. All upgrade costs calculated correctly using exponential formulas. All 118 tests passing. No linter or build errors. EPIC-3 in progress."
+memo_from_last_run: "BT-011 completed: Station Grid & Modals implemented. Created StationCard component showing locked/unlocked states with color-coded styling per PRD palette. Created StationGrid component with 2x3 grid layout for all 6 stations. Created StationModal component with 2-column upgrade layout (Equipment/Quality), manager hiring, storage upgrades, and ingredient management with tags. All buttons hide when player lacks sufficient funds. All upgrade costs calculated correctly using exponential formulas. All 118 tests passing. No linter or build errors. EPIC-4 is next."

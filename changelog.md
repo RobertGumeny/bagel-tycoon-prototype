@@ -266,6 +266,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed - 2026-02-01
 
+#### BUG-003: CSS Not Rendering
+
+- Fixed CSS rendering issue by adding PostCSS configuration for Tailwind CSS v4
+- Created `postcss.config.js` with `@tailwindcss/postcss` plugin to enable CSS processing
+- Installed `@tailwindcss/postcss` package as devDependency
+- Refactored `.btn-primary` and `.btn-disabled` classes to avoid circular `@apply` references
+- All Tailwind utility classes now render correctly in the browser
+
+**Technical Details:**
+
+- Tailwind CSS v4 requires separate PostCSS plugin (`@tailwindcss/postcss`) instead of using `tailwindcss` directly
+- Updated button component classes to expand all utilities inline instead of using `@apply btn`
+- Build generates 22.79 KB CSS bundle with proper Tailwind utilities
+
 #### BUG-002: getState() Map Type Preservation
 
 - Fixed `getState()` method in BagelTycoonEngine to preserve Map type when returning state to React components
