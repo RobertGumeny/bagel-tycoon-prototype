@@ -1,6 +1,6 @@
 /**
  * Main App Component
- * Tasks: BT-009, BT-010
+ * Tasks: BT-009, BT-010, BT-011
  *
  * Manages game engine integration and renders the UI
  */
@@ -12,6 +12,7 @@ import { Header } from './components/Header';
 import { Layout } from './components/Layout';
 import { CustomerQueue } from './components/CustomerQueue';
 import { ActiveOrder } from './components/ActiveOrder';
+import { StationGrid } from './components/StationGrid';
 
 function App() {
   // Initialize engine instance (singleton)
@@ -30,6 +31,23 @@ function App() {
     };
   }, [engine]);
 
+  // Station management handlers
+  const handleUnlockStation = (stationId: string) => {
+    engine.unlockStation(stationId);
+  };
+
+  const handleUpgradeStation = (stationId: string, type: 'equipment' | 'quality' | 'storage') => {
+    engine.upgradeStation(stationId, type);
+  };
+
+  const handleHireManager = (stationId: string) => {
+    engine.hireManager(stationId);
+  };
+
+  const handleAddIngredient = (stationId: string) => {
+    engine.addIngredient(stationId);
+  };
+
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
@@ -45,10 +63,13 @@ function App() {
             </div>
           }
           main={
-            <div className="text-slate-600">
-              <h2 className="text-xl font-bold mb-4">Main Content</h2>
-              <p className="text-sm">Station Grid and Sales Ledger will go here.</p>
-            </div>
+            <StationGrid
+              gameState={gameState}
+              onUnlockStation={handleUnlockStation}
+              onUpgradeStation={handleUpgradeStation}
+              onHireManager={handleHireManager}
+              onAddIngredient={handleAddIngredient}
+            />
           }
         />
       </div>
