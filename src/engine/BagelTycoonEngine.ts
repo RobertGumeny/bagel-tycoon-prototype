@@ -1,6 +1,6 @@
 /**
  * BagelTycoonEngine - Core game logic engine
- * Tasks: BT-002, BT-003
+ * Tasks: BT-002, BT-003, BT-007
  *
  * Singleton class that manages all game state and logic.
  * Completely decoupled from React/DOM for maximum testability and reusability.
@@ -11,6 +11,7 @@ import type {
   StationState,
   Order,
   SaleRecord,
+  Recipe,
 } from './types';
 
 import {
@@ -21,6 +22,8 @@ import {
   CUSTOMER_EMOJIS,
   TIMING,
   RECIPES,
+  SPEED_MULTIPLIER,
+  QUALITY_MULTIPLIER,
 } from './types';
 
 /**
@@ -645,9 +648,6 @@ export class BagelTycoonEngine {
       }
     }
 
-    // Calculate total base time (sum of food + beverage times)
-    const totalTime = foodRecipe.baseTime + (beverageRecipe?.baseTime ?? 0);
-
     // Get all unique stations involved
     const stationsInvolved = [
       ...new Set([
@@ -655,6 +655,9 @@ export class BagelTycoonEngine {
         ...(beverageRecipe?.requiredStations ?? []),
       ]),
     ];
+
+    // Calculate processing time with speed multipliers and parallel/series logic (BT-007)
+    const totalTime = this.calculateOrderProcessingTime(foodRecipe, beverageRecipe);
 
     // Create order with unique ID
     this.orderCounter++;
@@ -673,26 +676,142 @@ export class BagelTycoonEngine {
   }
 
   /**
+   * Calculate order processing time with speed multipliers and parallel/series logic
+   * BT-007: Processing Logic
+   *
+   * The baseTime represents the total time to complete the entire order.
+   * Each station's contribution is: baseTime / speedMultiplier
+   * For multi-station orders:
+   * - PARALLEL (all managers): max time among stations
+   * - SERIES (any without manager): sum of all station times
+   *
+   * @param foodRecipe The food recipe in the order
+   * @param beverageRecipe Optional beverage recipe in the order
+   * @returns Total processing time in seconds
+   */
+  private calculateOrderProcessingTime(
+    foodRecipe: Recipe,
+    beverageRecipe?: Recipe
+  ): number {
+    // Calculate processing time for the food recipe at each station
+    const foodStationTimes: number[] = foodRecipe.requiredStations.map(stationId => {
+      const station = this.state.stations.get(stationId);
+      if (!station) return foodRecipe.baseTime;
+
+      // Apply speed multiplier: baseTime / (1 + (level - 1) * 0.25)
+      const speedMultiplier = 1 + (station.equipmentLevel - 1) * SPEED_MULTIPLIER;
+      return foodRecipe.baseTime / speedMultiplier;
+    });
+
+    // Calculate processing time for the beverage recipe if present
+    let beverageStationTimes: number[] = [];
+    if (beverageRecipe) {
+      beverageStationTimes = beverageRecipe.requiredStations.map(stationId => {
+        const station = this.state.stations.get(stationId);
+        if (!station) return beverageRecipe.baseTime;
+
+        // Apply speed multiplier
+        const speedMultiplier = 1 + (station.equipmentLevel - 1) * SPEED_MULTIPLIER;
+        return beverageRecipe.baseTime / speedMultiplier;
+      });
+    }
+
+    // Get all unique stations involved in the entire order
+    const allStations = [
+      ...new Set([
+        ...foodRecipe.requiredStations,
+        ...(beverageRecipe?.requiredStations ?? []),
+      ]),
+    ];
+
+    // Check if all stations have managers
+    const allHaveManagers = allStations.every(stationId => {
+      const station = this.state.stations.get(stationId);
+      return station?.hasManager ?? false;
+    });
+
+    // Calculate total time based on parallel vs. series processing
+    if (allHaveManagers) {
+      // PARALLEL: All stations work simultaneously, use maximum time
+      const allTimes = [...foodStationTimes, ...beverageStationTimes];
+      return Math.max(...allTimes);
+    } else {
+      // SERIES: Stations work sequentially, sum all times
+      const allTimes = [...foodStationTimes, ...beverageStationTimes];
+      return allTimes.reduce((sum, time) => sum + time, 0);
+    }
+  }
+
+  /**
    * Complete the current active order
-   * Full implementation in BT-007, this is a placeholder
+   * BT-008: Calculate pricing with quality multipliers and speed bonuses
    */
   private completeOrder(): void {
     if (!this.state.activeOrder) {
       return;
     }
 
-    // Placeholder: Just clear the order for now
-    // Full pricing and bonus calculation will be added in BT-007
     const order = this.state.activeOrder;
+
+    // Calculate base price (food + beverage if present)
     const basePrice = order.foodRecipe.basePrice + (order.beverageRecipe?.basePrice ?? 0);
 
-    // Add money (basic implementation)
-    this.addMoney(basePrice);
+    // Calculate quality multiplier: 1 + sum((stationQuality - 1) * 0.12) for all used stations
+    let qualityBonus = 1;
+    order.stationsInvolved.forEach(stationId => {
+      const station = this.state.stations.get(stationId);
+      if (station) {
+        qualityBonus += (station.qualityLevel - 1) * QUALITY_MULTIPLIER;
+      }
+    });
+
+    // Calculate actual time taken (in seconds)
+    const actualTime = (Date.now() - order.startTime) / 1000;
+    const baseTime = order.totalTime;
+
+    // Calculate speed bonus based on actual vs base time
+    let speedMultiplier: number;
+    let speedLabel: 'lightning' | 'good' | 'normal' | 'slow';
+
+    if (actualTime < baseTime * 0.5) {
+      speedMultiplier = 1.5;
+      speedLabel = 'lightning';
+    } else if (actualTime < baseTime * 1.0) {
+      speedMultiplier = 1.2;
+      speedLabel = 'good';
+    } else if (actualTime < baseTime * 2.0) {
+      speedMultiplier = 1.0;
+      speedLabel = 'normal';
+    } else {
+      speedMultiplier = 0.7;
+      speedLabel = 'slow';
+    }
+
+    // Calculate final price
+    const finalPrice = basePrice * qualityBonus * speedMultiplier;
+
+    // Create sale record
+    const orderName = order.beverageRecipe
+      ? `${order.foodRecipe.name} & ${order.beverageRecipe.name}`
+      : order.foodRecipe.name;
+
+    const sale: SaleRecord = {
+      id: order.id,
+      orderName,
+      speedBonus: speedLabel,
+      qualityBonus,
+      finalPrice,
+      timestamp: Date.now(),
+    };
+
+    // Add money and sale to history
+    this.addMoney(finalPrice);
+    this.addSaleToHistory(sale);
 
     // Clear active order
     this.state.activeOrder = null;
 
-    console.log(`Order completed: ${order.foodRecipe.name}, earned $${basePrice.toFixed(2)}`);
+    console.log(`Order completed: ${orderName}, earned $${finalPrice.toFixed(2)} (Quality: ${qualityBonus.toFixed(2)}x, Speed: ${speedLabel})`);
   }
 
   /**

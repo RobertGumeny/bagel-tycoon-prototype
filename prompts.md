@@ -1,6 +1,6 @@
 # Feature Implementation:
 
-Please implement the next task for [EPIC NAME]. Each task (e.g. BT-001) will have a list of requirements and a description.
+Please implement the next task as specified in `project-state.yaml`. Each task (e.g. BT-001) will have a list of requirements and a description.
 
 Success Criteria:
 
@@ -17,7 +17,7 @@ ALWAYS REMEMBER TO REPORT ALL FAILURES. Let me know if you have any questions be
 
 # Bug Fix
 
-Fix the bug referenced in BUG_REPORT.md
+Fix the bug referenced in BUG_REPORT.md and `project-state.yaml`.
 
 Steps:
 
