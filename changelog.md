@@ -10,6 +10,68 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added - 2026-02-01
 
+#### BT-011: Station Grid & Modals
+
+- Created StationCard component with locked and unlocked states:
+  - Locked state: Grayscale card with lock icon and unlock button
+  - Unlocked state: Color-coded card with station stats (Speed Lvl, Quality Lvl, Storage)
+  - Manager badge display when station has professional staff
+  - Station colors match PRD palette (orange, blue, amber, emerald, yellow)
+  - Click to open management modal on unlocked stations
+  - Unlock buttons disabled when player lacks sufficient funds
+- Created StationGrid component:
+  - 2x3 grid layout displaying all 6 stations in proper order
+  - Responsive grid with proper spacing and card styling
+  - Modal state management for station selection
+  - Integrated with App.tsx to replace placeholder main content
+- Created StationModal component with comprehensive upgrade interface:
+  - Color-coded header matching station (orange, blue, amber, emerald, yellow)
+  - 2-column grid layout for Equipment and Quality upgrades
+  - Equipment section: Current level display and upgrade button with cost
+  - Quality section: Current level display and upgrade button with cost
+  - Manager section: Hire manager button or hired badge with "Professional Staff" label
+  - Storage section: Current capacity display (Lvl X, Y slots) with upgrade button
+  - Ingredients section: Unlocked ingredient tags and "Add Next Ingredient" button
+  - All upgrade buttons hide/disable when player lacks sufficient funds
+  - Storage upgrade button hidden when at max level (Level 3)
+  - "All Ingredients Unlocked" message when station has all available ingredients
+  - "Storage Full - Upgrade Storage" message when trying to add ingredients at capacity
+- Cost calculations:
+  - Equipment: `10 * 1.6^currentLevel`
+  - Quality: `10 * 1.6^currentLevel`
+  - Storage: `50 * (currentLevel + 1)`
+  - Ingredient: `$25` (flat cost)
+  - Manager: `$200` (one-time)
+- Connected all station management handlers to engine methods:
+  - `unlockStation()` - Purchase and unlock stations
+  - `upgradeStation()` - Upgrade equipment, quality, or storage
+  - `hireManager()` - Hire station manager
+  - `addIngredient()` - Unlock next ingredient in sequence
+- Ingredient name formatting utility converts IDs to display names (e.g., "plainBagel" → "Plain Bagel")
+- Updated App.tsx to integrate StationGrid with all required handlers
+- Full POS-style design with rounded-3xl corners, proper spacing, and hover/active states
+
+**Technical Details:**
+
+- StationCard uses Lucide React icons (Lock, Zap, Star, Package, CheckCircle2)
+- StationModal uses Lucide React icons (X, Zap, Star, Package, Users, Plus)
+- Color mapping object provides consistent theming across components
+- All buttons use Tailwind CSS with active:scale-95 for tactile feedback
+- Modal uses fixed overlay with centered positioning and max-height scrolling
+- Storage capacity calculated from STORAGE_CAPS array [3, 5, 8]
+- Next ingredient determined from station config's availableIngredients array
+- All cost formulas match PRD specifications exactly
+
+**Testing:**
+
+- ✅ All 118 unit tests passing (no new tests required for UI components)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Build successful (226.57 KB bundle)
+- ✅ All station management features functional
+- ✅ Button states correctly respond to player funds
+- ✅ Ingredient unlocking respects storage capacity limits
+
 #### BT-010: Active Order & Queue UI
 
 - Created CustomerQueue component displaying 5 slots for customer queue:
