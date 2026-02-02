@@ -1,68 +1,69 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  /* Station colors from PRD */
+  --color-station-bagel-light: #fed7aa;
+  --color-station-bagel: #fed7aa;
+  --color-station-bagel-dark: #7c2d12;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  --color-station-cooler-light: #dbeafe;
+  --color-station-cooler: #dbeafe;
+  --color-station-cooler-dark: #1e3a8a;
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+  --color-station-beverage-light: #fef3c7;
+  --color-station-beverage: #fef3c7;
+  --color-station-beverage-dark: #78350f;
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
+  --color-station-slicer-light: #d1fae5;
+  --color-station-slicer: #d1fae5;
+  --color-station-slicer-dark: #064e3b;
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  --color-station-griddle-light: #fed7aa;
+  --color-station-griddle: #fed7aa;
+  --color-station-griddle-dark: #7c2d12;
+
+  --color-station-fryer-light: #fef9c3;
+  --color-station-fryer: #fef9c3;
+  --color-station-fryer-dark: #713f12;
+
+  /* Custom border radius */
+  --radius-3xl: 2rem;
+
+  /* Font family - system fonts for POS style */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "SF Pro", Inter, system-ui, sans-serif;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@layer base {
+  body {
+    @apply bg-gray-50 text-slate-900 antialiased;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
   }
-  a:hover {
-    color: #747bff;
+}
+
+@layer components {
+  /* POS-style button */
+  .btn {
+    @apply rounded-3xl px-6 py-3 font-bold uppercase tracking-wide transition-transform active:scale-95;
   }
-  button {
-    background-color: #f9f9f9;
+
+  .btn-primary {
+    @apply btn bg-blue-600 text-white hover:bg-blue-700;
+  }
+
+  .btn-disabled {
+    @apply btn bg-gray-300 text-gray-500 cursor-not-allowed;
+  }
+
+  /* Card styling */
+  .card {
+    @apply bg-white rounded-3xl border border-gray-200 shadow-sm;
+  }
+
+  /* Money display with tabular numerals */
+  .money {
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
   }
 }

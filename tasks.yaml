@@ -45,7 +45,7 @@ epics:
 
   - id: EPIC-2
     title: "Core Simulation & Logic"
-    status: IN_PROGRESS
+    status: DONE
     tasks:
       - id: BT-005
         title: "Customer Queue & Spawning"
@@ -85,7 +85,7 @@ epics:
 
   - id: EPIC-3
     title: "React UI Layer (POS Style)"
-    status: TODO
+    status: IN_PROGRESS
     tasks:
       - id: BT-009
         title: "POS Layout & Shell"
@@ -94,7 +94,7 @@ epics:
           - "2-column layout (Sidebar: 33%, Main: 66%) using Tailwind CSS."
           - "Header component displaying Logo and real-time Money counter."
           - "Implement random tagline rotation from the PRD pool on every mount."
-        status: TODO
+        status: DONE
 
       - id: BT-010
         title: "Active Order & Queue UI"
