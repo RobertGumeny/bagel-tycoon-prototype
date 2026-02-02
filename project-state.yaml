@@ -24,7 +24,7 @@ active_systems:
 known_issues: []
 next_task:
   type: feature
-  id: BT-012
+  id: BT-013
 recent_bugs:
   - id: BUG-003
     issue: "CSS Not Rendering - Missing PostCSS Configuration"
@@ -35,4 +35,4 @@ recent_bugs:
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
-memo_from_last_run: "BT-011 completed: Station Grid & Modals implemented. Created StationCard component showing locked/unlocked states with color-coded styling per PRD palette. Created StationGrid component with 2x3 grid layout for all 6 stations. Created StationModal component with 2-column upgrade layout (Equipment/Quality), manager hiring, storage upgrades, and ingredient management with tags. All buttons hide when player lacks sufficient funds. All upgrade costs calculated correctly using exponential formulas. All 118 tests passing. No linter or build errors. EPIC-4 is next."
+memo_from_last_run: "BT-012 completed: Cash Register Station & Order Automation implemented. Created Register component positioned below ActiveOrder. Implemented Take Order button (calls engine.takeOrder()) and Hire Register Manager button ($250). Visual styling uses dashed border when unautomated, solid card when manager hired. Added 17 component tests. Installed React testing libraries (@testing-library/react, user-event, jest-dom). All 135 tests passing (118 engine + 17 Register). No linter or build errors. Next: BT-013 Queue Spawning Fix."
