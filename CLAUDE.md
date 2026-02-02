@@ -34,6 +34,10 @@
 
 - IF FAILURE (Maximum 5 attempts): Revert changes using Git and generate a FAILURE_REPORT.md explicitly outlining the bugfix and associated task that failed, your proposed plan and what you tried, and your assessment of why it is failing.
 
+### EPIC COMPLETION CHECK:
+
+Before declaring an epic complete or moving to a new epic, explicitly verify that all tasks in the current epic are marked DONE in tasks.yaml. If any task is TODO or IN_PROGRESS, the epic must be treated as incomplete regardless of memos or assumptions.
+
 ## FOR ALL TASKS AND STEPS:
 
 - IF you encounter any bugs that directly impact your ability to complete a task, stop and generate a BUG_REPORT.md by copying BUG_REPORT_TEMPLATE.md and outlining what the bug was, where it was encountered, your assessment of the best fix, the impacted task, and any files that were impacted by the bug. To get the ID for the bug, look at recent_bugs in `project-state.yaml`.

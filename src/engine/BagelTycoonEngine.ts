@@ -23,6 +23,7 @@ import {
   TIMING,
   RECIPES,
   SPEED_MULTIPLIER,
+  QUALITY_MULTIPLIER,
 } from './types';
 
 /**
@@ -743,25 +744,74 @@ export class BagelTycoonEngine {
 
   /**
    * Complete the current active order
-   * Full implementation in BT-007, this is a placeholder
+   * BT-008: Calculate pricing with quality multipliers and speed bonuses
    */
   private completeOrder(): void {
     if (!this.state.activeOrder) {
       return;
     }
 
-    // Placeholder: Just clear the order for now
-    // Full pricing and bonus calculation will be added in BT-007
     const order = this.state.activeOrder;
+
+    // Calculate base price (food + beverage if present)
     const basePrice = order.foodRecipe.basePrice + (order.beverageRecipe?.basePrice ?? 0);
 
-    // Add money (basic implementation)
-    this.addMoney(basePrice);
+    // Calculate quality multiplier: 1 + sum((stationQuality - 1) * 0.12) for all used stations
+    let qualityBonus = 1;
+    order.stationsInvolved.forEach(stationId => {
+      const station = this.state.stations.get(stationId);
+      if (station) {
+        qualityBonus += (station.qualityLevel - 1) * QUALITY_MULTIPLIER;
+      }
+    });
+
+    // Calculate actual time taken (in seconds)
+    const actualTime = (Date.now() - order.startTime) / 1000;
+    const baseTime = order.totalTime;
+
+    // Calculate speed bonus based on actual vs base time
+    let speedMultiplier: number;
+    let speedLabel: 'lightning' | 'good' | 'normal' | 'slow';
+
+    if (actualTime < baseTime * 0.5) {
+      speedMultiplier = 1.5;
+      speedLabel = 'lightning';
+    } else if (actualTime < baseTime * 1.0) {
+      speedMultiplier = 1.2;
+      speedLabel = 'good';
+    } else if (actualTime < baseTime * 2.0) {
+      speedMultiplier = 1.0;
+      speedLabel = 'normal';
+    } else {
+      speedMultiplier = 0.7;
+      speedLabel = 'slow';
+    }
+
+    // Calculate final price
+    const finalPrice = basePrice * qualityBonus * speedMultiplier;
+
+    // Create sale record
+    const orderName = order.beverageRecipe
+      ? `${order.foodRecipe.name} & ${order.beverageRecipe.name}`
+      : order.foodRecipe.name;
+
+    const sale: SaleRecord = {
+      id: order.id,
+      orderName,
+      speedBonus: speedLabel,
+      qualityBonus,
+      finalPrice,
+      timestamp: Date.now(),
+    };
+
+    // Add money and sale to history
+    this.addMoney(finalPrice);
+    this.addSaleToHistory(sale);
 
     // Clear active order
     this.state.activeOrder = null;
 
-    console.log(`Order completed: ${order.foodRecipe.name}, earned $${basePrice.toFixed(2)}`);
+    console.log(`Order completed: ${orderName}, earned $${finalPrice.toFixed(2)} (Quality: ${qualityBonus.toFixed(2)}x, Speed: ${speedLabel})`);
   }
 
   /**

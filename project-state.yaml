@@ -12,10 +12,12 @@ active_systems:
     "Game Loop",
     "Persistence",
     "Customer Spawning",
+    "Order Processing",
+    "Pricing & Bonuses",
   ]
 known_issues: []
 recent_bugs:
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
-memo_from_last_run: "BT-007 completed: Order processing logic implemented with speed multipliers and parallel/series processing. Speed multiplier applies per station: baseTime / (1 + (equipmentLevel - 1) * 0.25). Parallel processing (max time) when all stations have managers, series processing (sum of times) otherwise. Added 11 new tests covering speed multipliers, parallel/series logic, and beverage combinations. All 103 tests passing. EPIC-2 complete. Ready to proceed with BT-008 (Pricing & Speed Bonus Logic)."
+memo_from_last_run: "BT-008 completed: Pricing and speed bonus logic fully implemented. Quality multiplier calculated from all stations involved (1 + sum((qualityLevel - 1) * 0.12)). Speed bonus tiers implemented: lightning (1.5x at <50% time), good (1.2x at <100%), normal (1.0x at <200%), slow (0.7x at ≥200%). Final price = basePrice * qualityMultiplier * speedBonus. Sales logged to history with all bonus details. Added 15 new tests. All 118 tests passing. EPIC-2 complete."

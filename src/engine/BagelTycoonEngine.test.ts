@@ -1486,6 +1486,7 @@ describe('BagelTycoonEngine', () => {
             }],
           ]),
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const engine = BagelTycoonEngine.getInstance(initialState as any);
 
         // Upgrade bagelCase to target level
@@ -1524,25 +1525,34 @@ describe('BagelTycoonEngine', () => {
       engine.upgradeStation('cooler', 'equipment');
       engine.upgradeStation('cooler', 'equipment');
 
-      // Add customer and take order
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (engine as any).state.customerQueue.push('😀');
-      engine.takeOrder();
+      // Take orders until we get a multi-station one
+      let foundMultiStation = false;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
 
-      const order = engine.getState().activeOrder;
-      expect(order).not.toBeNull();
+        const order = engine.getState().activeOrder;
+        if (order && order.foodRecipe.requiredStations.length > 1) {
+          // For multi-station orders without managers, time is sum of station times
+          // Each station processes with its own speed multiplier
+          const baseTime = order.foodRecipe.baseTime;
 
-      if (order) {
-        // For multi-station orders without managers, time is sum of station times
-        // Each station processes with its own speed multiplier
-        const baseTime = order.foodRecipe.baseTime;
+          // Without managers, series processing: sum of times per station
+          // Expected: baseTime/1.25 + baseTime/1.5 = baseTime * (0.8 + 0.667)
+          const expectedTime = baseTime / 1.25 + baseTime / 1.5;
 
-        // Without managers, series processing: sum of times per station
-        // Expected: baseTime/1.25 + baseTime/1.5 = baseTime * (0.8 + 0.667)
-        const expectedTime = baseTime / 1.25 + baseTime / 1.5;
+          expect(order.totalTime).toBeCloseTo(expectedTime, 1);
+          foundMultiStation = true;
+          break;
+        }
 
-        expect(order.totalTime).toBeCloseTo(expectedTime, 1);
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
       }
+
+      expect(foundMultiStation).toBe(true);
     });
   });
 
@@ -1789,6 +1799,492 @@ describe('BagelTycoonEngine', () => {
 
         expect(order.totalTime).toBeCloseTo(expectedTime, 1);
       }
+    });
+  });
+
+  // ============================================================================
+  // Pricing & Speed Bonus Logic Tests (BT-008)
+  // ============================================================================
+
+  describe('Pricing & Speed Bonus Logic (BT-008)', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should calculate quality bonus from all stations involved in order', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Upgrade quality levels
+      engine.upgradeStation('bagelCase', 'quality'); // Level 2
+      engine.upgradeStation('cooler', 'quality'); // Level 2
+
+      // Take orders until we get one using both stations
+      let foundMultiStation = false;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order && order.foodRecipe.requiredStations.length > 1) {
+          // Complete order immediately
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (engine as any).state.activeOrder.remainingTime = 0;
+          vi.advanceTimersByTime(100);
+
+          const state = engine.getState();
+
+          // Quality bonus should be: 1 + (2-1)*0.12 + (2-1)*0.12 = 1 + 0.12 + 0.12 = 1.24
+          const sale = state.salesHistory[0];
+          expect(sale.qualityBonus).toBeCloseTo(1.24, 2);
+          foundMultiStation = true;
+          break;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      expect(foundMultiStation).toBe(true);
+    });
+
+    it('should calculate quality bonus with different quality levels per station', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Upgrade quality levels differently
+      engine.upgradeStation('bagelCase', 'quality'); // Level 2
+      engine.upgradeStation('bagelCase', 'quality'); // Level 3
+      engine.upgradeStation('cooler', 'quality'); // Level 2
+
+      // Take multiple orders until we get one using both stations
+      let foundMultiStation = false;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order && order.foodRecipe.requiredStations.length > 1) {
+          // Complete order
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (engine as any).state.activeOrder.remainingTime = 0;
+          vi.advanceTimersByTime(100);
+
+          const state = engine.getState();
+
+          // Quality bonus: 1 + (3-1)*0.12 + (2-1)*0.12 = 1 + 0.24 + 0.12 = 1.36
+          const sale = state.salesHistory[0];
+          expect(sale.qualityBonus).toBeCloseTo(1.36, 2);
+          foundMultiStation = true;
+          break;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      expect(foundMultiStation).toBe(true);
+    });
+
+    it('should give lightning speed bonus (<50% of base time)', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Take order
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order) {
+        const baseTime = order.totalTime;
+
+        // Simulate completing order at 40% of base time
+        const actualTime = baseTime * 0.4 * 1000; // Convert to ms
+        vi.advanceTimersByTime(actualTime);
+
+        // Force completion
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder.remainingTime = 0;
+        vi.advanceTimersByTime(100);
+
+        const state = engine.getState();
+        const sale = state.salesHistory[0];
+
+        expect(sale.speedBonus).toBe('lightning');
+
+        // Lightning speed gives 1.5x multiplier
+        const basePrice = order.foodRecipe.basePrice;
+        const expectedPrice = basePrice * 1.5; // quality level 1 = 1.0
+        expect(sale.finalPrice).toBeCloseTo(expectedPrice, 2);
+      }
+    });
+
+    it('should give good speed bonus (50-100% of base time)', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order) {
+        const baseTime = order.totalTime;
+
+        // Simulate completing order at 75% of base time
+        const actualTime = baseTime * 0.75 * 1000;
+        vi.advanceTimersByTime(actualTime);
+
+        // Force completion
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder.remainingTime = 0;
+        vi.advanceTimersByTime(100);
+
+        const state = engine.getState();
+        const sale = state.salesHistory[0];
+
+        expect(sale.speedBonus).toBe('good');
+
+        // Good speed gives 1.2x multiplier
+        const basePrice = order.foodRecipe.basePrice;
+        const expectedPrice = basePrice * 1.2;
+        expect(sale.finalPrice).toBeCloseTo(expectedPrice, 2);
+      }
+    });
+
+    it('should give normal speed bonus (100-200% of base time)', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order) {
+        const baseTime = order.totalTime;
+
+        // Simulate completing order at 150% of base time
+        const actualTime = baseTime * 1.5 * 1000;
+        vi.advanceTimersByTime(actualTime);
+
+        // Order should complete naturally through tick
+        // Check if active order is null and sale is in history
+        const state = engine.getState();
+        expect(state.activeOrder).toBeNull();
+
+        const sale = state.salesHistory[0];
+        expect(sale).toBeDefined();
+        expect(sale.speedBonus).toBe('normal');
+
+        // Normal speed gives 1.0x multiplier
+        const basePrice = order.foodRecipe.basePrice;
+        const expectedPrice = basePrice * 1.0;
+        expect(sale.finalPrice).toBeCloseTo(expectedPrice, 2);
+      }
+    });
+
+    it('should give slow speed penalty (≥200% of base time)', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order) {
+        const baseTime = order.totalTime;
+        const startTime = order.startTime;
+
+        // Advance system time to simulate 250% of base time elapsed
+        const targetActualTime = baseTime * 2.5 * 1000;
+        vi.setSystemTime(startTime + targetActualTime);
+
+        // Force completion by setting remainingTime to 0
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder.remainingTime = 0;
+        vi.advanceTimersByTime(100);
+
+        // Order should complete
+        const state = engine.getState();
+        expect(state.activeOrder).toBeNull();
+
+        const sale = state.salesHistory[0];
+        expect(sale).toBeDefined();
+        expect(sale.speedBonus).toBe('slow');
+
+        // Slow speed gives 0.7x multiplier
+        const basePrice = order.foodRecipe.basePrice;
+        const expectedPrice = basePrice * 0.7;
+        expect(sale.finalPrice).toBeCloseTo(expectedPrice, 2);
+      }
+    });
+
+    it('should combine quality and speed bonuses correctly', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Upgrade quality to level 3
+      engine.upgradeStation('bagelCase', 'quality'); // Level 2
+      engine.upgradeStation('bagelCase', 'quality'); // Level 3
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order) {
+        const baseTime = order.totalTime;
+
+        // Complete at lightning speed (40% of base time)
+        const actualTime = baseTime * 0.4 * 1000;
+        vi.advanceTimersByTime(actualTime);
+
+        // Force completion
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder.remainingTime = 0;
+        vi.advanceTimersByTime(100);
+
+        const state = engine.getState();
+        const sale = state.salesHistory[0];
+
+        // Quality bonus: 1 + (3-1)*0.12 = 1.24
+        expect(sale.qualityBonus).toBeCloseTo(1.24, 2);
+        expect(sale.speedBonus).toBe('lightning');
+
+        // Final price: basePrice * 1.24 * 1.5
+        const basePrice = order.foodRecipe.basePrice;
+        const expectedPrice = basePrice * 1.24 * 1.5;
+        expect(sale.finalPrice).toBeCloseTo(expectedPrice, 2);
+      }
+    });
+
+    it('should add sale to history with correct order name', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      const order = engine.getState().activeOrder;
+      expect(order).not.toBeNull();
+
+      if (order) {
+        // Force completion
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder.remainingTime = 0;
+        vi.advanceTimersByTime(100);
+
+        const state = engine.getState();
+        const sale = state.salesHistory[0];
+
+        // Order name should match the food recipe name (no beverage)
+        expect(sale.orderName).toBe(order.foodRecipe.name);
+      }
+    });
+
+    it('should include beverage in order name when present', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Unlock beverages
+      engine.unlockStation('beverages');
+
+      // Take orders until we get one with beverage
+      let foundBeverage = false;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order?.beverageRecipe) {
+          // Force completion
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (engine as any).state.activeOrder.remainingTime = 0;
+          vi.advanceTimersByTime(100);
+
+          const state = engine.getState();
+          const sale = state.salesHistory[0];
+
+          // Order name should include both food and beverage
+          expect(sale.orderName).toContain(order.foodRecipe.name);
+          expect(sale.orderName).toContain(order.beverageRecipe.name);
+          expect(sale.orderName).toContain('&');
+
+          foundBeverage = true;
+          break;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      expect(foundBeverage).toBe(true);
+    });
+
+    it('should add money to player when order completes', () => {
+      const engine = createEngineWithMoney(100);
+
+      const moneyBefore = engine.getState().money;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      // Force completion
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.activeOrder.remainingTime = 0;
+      vi.advanceTimersByTime(100);
+
+      const state = engine.getState();
+      const sale = state.salesHistory[0];
+
+      // Money should increase by final price
+      expect(state.money).toBeCloseTo(moneyBefore + sale.finalPrice, 2);
+    });
+
+    it('should update totalEarnings when order completes', () => {
+      const engine = createEngineWithMoney(100);
+
+      const earningsBefore = engine.getState().totalEarnings;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      // Force completion
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.activeOrder.remainingTime = 0;
+      vi.advanceTimersByTime(100);
+
+      const state = engine.getState();
+      const sale = state.salesHistory[0];
+
+      // Total earnings should increase by final price
+      expect(state.totalEarnings).toBeCloseTo(earningsBefore + sale.finalPrice, 2);
+    });
+
+    it('should keep only last 5 sales in history', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Complete 10 orders
+      for (let i = 0; i < 10; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        // Force completion
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder.remainingTime = 0;
+        vi.advanceTimersByTime(100);
+      }
+
+      const state = engine.getState();
+      expect(state.salesHistory.length).toBe(5);
+    });
+
+    it('should have most recent sale at the beginning of history', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Complete 3 orders
+      const orderIds: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const orderId = engine.getState().activeOrder?.id ?? '';
+        orderIds.push(orderId);
+
+        // Force completion
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder.remainingTime = 0;
+        vi.advanceTimersByTime(100);
+      }
+
+      const state = engine.getState();
+
+      // Most recent order should be first in history
+      expect(state.salesHistory[0].id).toBe(orderIds[2]);
+      expect(state.salesHistory[1].id).toBe(orderIds[1]);
+      expect(state.salesHistory[2].id).toBe(orderIds[0]);
+    });
+
+    it('should clear active order after completion', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.customerQueue.push('😀');
+      engine.takeOrder();
+
+      expect(engine.getState().activeOrder).not.toBeNull();
+
+      // Force completion
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (engine as any).state.activeOrder.remainingTime = 0;
+      vi.advanceTimersByTime(100);
+
+      expect(engine.getState().activeOrder).toBeNull();
+    });
+
+    it('should calculate prices for beverage orders correctly', () => {
+      const engine = createEngineWithMoney(100000);
+
+      // Unlock beverages
+      engine.unlockStation('beverages');
+
+      // Take orders until we get one with beverage
+      let foundBeverage = false;
+      for (let i = 0; i < 50; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.customerQueue.push('😀');
+        engine.takeOrder();
+
+        const order = engine.getState().activeOrder;
+        if (order?.beverageRecipe) {
+          const foodPrice = order.foodRecipe.basePrice;
+          const beveragePrice = order.beverageRecipe.basePrice;
+          const totalBasePrice = foodPrice + beveragePrice;
+
+          // Complete at normal speed (150% of base time)
+          const baseTime = order.totalTime;
+          vi.advanceTimersByTime(baseTime * 1.5 * 1000);
+
+          // Order should complete naturally
+          const state = engine.getState();
+          expect(state.activeOrder).toBeNull();
+
+          const sale = state.salesHistory[0];
+          expect(sale).toBeDefined();
+
+          // At normal speed with quality level 1 for all stations:
+          // finalPrice = totalBasePrice * qualityBonus * 1.0
+          expect(sale.finalPrice).toBeCloseTo(totalBasePrice * sale.qualityBonus * 1.0, 2);
+
+          foundBeverage = true;
+          break;
+        }
+
+        // Clear order for next iteration
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (engine as any).state.activeOrder = null;
+      }
+
+      expect(foundBeverage).toBe(true);
     });
   });
 });
