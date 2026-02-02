@@ -15,6 +15,8 @@ describe("Register Component", () => {
     money: 1000,
     onTakeOrder: vi.fn(),
     onAutomateRegister: vi.fn(),
+    hasSecondRegister: false,
+    onAddSecondRegister: vi.fn(),
   };
 
   it("renders the register component", () => {
@@ -82,6 +84,18 @@ describe("Register Component", () => {
       expect(
         screen.queryByText(/Hire a manager to automatically take orders/i),
       ).not.toBeInTheDocument();
+    });
+
+    it("disables and shrinks Take Order button when automated", () => {
+      const { container } = render(<Register {...automatedProps} />);
+      const button = screen.getByText("Take Order") as HTMLButtonElement;
+      expect(button).toBeDisabled();
+      expect(container.firstChild).toBeTruthy();
+    });
+
+    it("shows Add Second Register button when automated and not purchased", () => {
+      render(<Register {...automatedProps} />);
+      expect(screen.getByText(/Add Second Register/i)).toBeInTheDocument();
     });
   });
 

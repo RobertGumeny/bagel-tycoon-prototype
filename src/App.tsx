@@ -50,6 +50,10 @@ function App() {
     engine.automateRegister();
   };
 
+  const handleAddSecondRegister = () => {
+    engine.addSecondRegister();
+  };
+
   // Station management handlers
   const handleUnlockStation = (stationId: string) => {
     engine.unlockStation(stationId);
@@ -95,6 +99,8 @@ function App() {
                 money={gameState.money}
                 onTakeOrder={handleTakeOrder}
                 onAutomateRegister={handleAutomateRegister}
+                hasSecondRegister={gameState.hasSecondRegister}
+                onAddSecondRegister={handleAddSecondRegister}
               />
             </div>
           }

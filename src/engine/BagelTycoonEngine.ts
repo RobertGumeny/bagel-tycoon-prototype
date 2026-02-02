@@ -614,6 +614,11 @@ export class BagelTycoonEngine {
     }
 
     // Update active order progress
+    // If register is automated, automatically take orders when possible
+    if (this.state.hasRegisterManager && this.state.activeOrder === null && this.state.customerQueue.length > 0) {
+      this.takeOrder();
+    }
+
     if (this.state.activeOrder) {
       this.state.activeOrder.remainingTime -= deltaTime;
 
