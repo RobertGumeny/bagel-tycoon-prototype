@@ -5,8 +5,8 @@
  * Displays the active order with progress bar and countdown timer
  */
 
-import { Clock } from 'lucide-react';
-import type { Order } from '../engine/types';
+import { Clock } from "lucide-react";
+import type { Order } from "../engine/types";
 
 interface ActiveOrderProps {
   order: Order | null;
@@ -16,7 +16,7 @@ export function ActiveOrder({ order }: ActiveOrderProps) {
   // Empty state - no active order
   if (!order) {
     return (
-      <div className="card p-8 flex items-center justify-center min-h-[200px]">
+      <div className="card p-8 flex items-center justify-center min-h-50">
         <p className="text-slate-400 italic text-center">
           Welcome to Bagel Tycoon, how can I help you?
         </p>
@@ -25,7 +25,8 @@ export function ActiveOrder({ order }: ActiveOrderProps) {
   }
 
   // Calculate progress percentage
-  const progress = ((order.totalTime - order.remainingTime) / order.totalTime) * 100;
+  const progress =
+    ((order.totalTime - order.remainingTime) / order.totalTime) * 100;
 
   // Build order name (food + optional beverage)
   const orderName = order.beverageRecipe
@@ -56,7 +57,9 @@ export function ActiveOrder({ order }: ActiveOrderProps) {
         </div>
         <div className="flex justify-between items-center mt-2 text-xs text-slate-300">
           <span>{progress.toFixed(0)}% Complete</span>
-          <span className="font-mono">{order.remainingTime.toFixed(1)}s / {order.totalTime.toFixed(1)}s</span>
+          <span className="font-mono">
+            {order.remainingTime.toFixed(1)}s / {order.totalTime.toFixed(1)}s
+          </span>
         </div>
       </div>
 
