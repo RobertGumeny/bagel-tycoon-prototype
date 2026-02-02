@@ -38,7 +38,7 @@ epics:
           - "Implement a scrolling 'Recent Sales' ticker in the Header next to the Money display."
           - "Ticker should cycle through the last 5 sales, showing price and speed icons (e.g., +$8.50 ⚡)."
           - "Clicking the ticker opens the full 'Daily Ledger' modal to view all 5 historical entries."
-        status: TODO
+        status: DONE
 
       - id: BT-016
         title: "Ingredient UI Refinement"

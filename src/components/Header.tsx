@@ -5,11 +5,14 @@
  * Displays logo, random tagline, and real-time money counter
  */
 
-import { useState } from 'react';
-import { TAGLINES } from '../engine/types';
+import { useState } from "react";
+import { TAGLINES } from "../engine/types";
+import { SalesTicker } from "./SalesTicker.tsx";
 
 interface HeaderProps {
   money: number;
+  salesHistory: import("../engine/types").SaleRecord[];
+  onOpenLedger: () => void;
 }
 
 /**
@@ -20,7 +23,7 @@ const getRandomTagline = (): string => {
   return TAGLINES[randomIndex];
 };
 
-export function Header({ money }: HeaderProps) {
+export function Header({ money, salesHistory, onOpenLedger }: HeaderProps) {
   // Select random tagline on mount only
   const [tagline] = useState(() => getRandomTagline());
 
@@ -46,15 +49,21 @@ export function Header({ money }: HeaderProps) {
           </div>
         </div>
 
-        {/* Right Side: Money Display */}
-        <div className="card px-8 py-4">
-          <div className="flex flex-col items-end">
-            <span className="text-xs uppercase tracking-wider text-slate-500 font-bold">
-              Cash
-            </span>
-            <span className="text-3xl font-black text-emerald-600 money">
-              ${money.toFixed(2)}
-            </span>
+        {/* Right Side: Money Display + Ticker */}
+        <div className="flex items-center gap-4">
+          <SalesTicker
+            salesHistory={salesHistory}
+            onOpenLedger={onOpenLedger}
+          />
+          <div className="card px-8 py-4">
+            <div className="flex flex-col items-end">
+              <span className="text-xs uppercase tracking-wider text-slate-500 font-bold">
+                Cash
+              </span>
+              <span className="text-3xl font-black text-emerald-600 money">
+                ${money.toFixed(2)}
+              </span>
+            </div>
           </div>
         </div>
       </div>

@@ -5,15 +5,16 @@
  * Manages game engine integration and renders the UI
  */
 
-import { useEffect, useState } from 'react';
-import { BagelTycoonEngine } from './engine/BagelTycoonEngine';
-import type { GameState } from './engine/types';
-import { Header } from './components/Header';
-import { Layout } from './components/Layout';
-import { CustomerQueue } from './components/CustomerQueue';
-import { ActiveOrder } from './components/ActiveOrder';
-import { Register } from './components/Register';
-import { StationGrid } from './components/StationGrid';
+import { useEffect, useState } from "react";
+import { ActiveOrder } from "./components/ActiveOrder";
+import { CustomerQueue } from "./components/CustomerQueue";
+import { DailyLedger } from "./components/DailyLedger";
+import { Header } from "./components/Header";
+import { Layout } from "./components/Layout";
+import { Register } from "./components/Register";
+import { StationGrid } from "./components/StationGrid";
+import { BagelTycoonEngine } from "./engine/BagelTycoonEngine";
+import type { GameState } from "./engine/types";
 
 function App() {
   // Initialize engine instance (singleton)
@@ -40,6 +41,11 @@ function App() {
     engine.takeOrder();
   };
 
+  const [ledgerOpen, setLedgerOpen] = useState(false);
+
+  const handleOpenLedger = () => setLedgerOpen(true);
+  const handleCloseLedger = () => setLedgerOpen(false);
+
   const handleAutomateRegister = () => {
     engine.automateRegister();
   };
@@ -49,7 +55,10 @@ function App() {
     engine.unlockStation(stationId);
   };
 
-  const handleUpgradeStation = (stationId: string, type: 'equipment' | 'quality' | 'storage') => {
+  const handleUpgradeStation = (
+    stationId: string,
+    type: "equipment" | "quality" | "storage",
+  ) => {
     engine.upgradeStation(stationId, type);
   };
 
@@ -64,7 +73,11 @@ function App() {
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
-      <Header money={gameState.money} />
+      <Header
+        money={gameState.money}
+        salesHistory={gameState.salesHistory}
+        onOpenLedger={handleOpenLedger}
+      />
 
       {/* Main Layout */}
       <div className="flex-1 overflow-hidden">
@@ -75,7 +88,10 @@ function App() {
               <ActiveOrder order={gameState.activeOrder} />
               <Register
                 hasRegisterManager={gameState.hasRegisterManager}
-                canTakeOrder={gameState.customerQueue.length > 0 && gameState.activeOrder === null}
+                canTakeOrder={
+                  gameState.customerQueue.length > 0 &&
+                  gameState.activeOrder === null
+                }
                 money={gameState.money}
                 onTakeOrder={handleTakeOrder}
                 onAutomateRegister={handleAutomateRegister}
@@ -93,6 +109,11 @@ function App() {
           }
         />
       </div>
+      <DailyLedger
+        open={ledgerOpen}
+        onClose={handleCloseLedger}
+        sales={gameState.salesHistory}
+      />
     </div>
   );
 }
