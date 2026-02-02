@@ -11,12 +11,11 @@ import { STATION_CONFIGS, BASE_COSTS, UPGRADE_MULTIPLIER, STORAGE_CAPS } from '.
 import type { GameState, StationState } from './types';
 
 /**
- * Helper to access stations as a Record (getState returns object, not Map at runtime)
- * TypeScript sees Map but runtime is object due to JSON serialization
+ * Helper to access stations as a Record (converts Map to object for easier testing)
  */
 function getStations(state: Readonly<GameState>): Record<string, StationState> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return state.stations as any;
+  // Convert Map to object for easier test access
+  return Object.fromEntries(state.stations);
 }
 
 /**
@@ -186,7 +185,7 @@ describe('BagelTycoonEngine', () => {
       const state = engine.getState();
 
       // All 6 stations should exist
-      expect(Object.keys(state.stations)).toHaveLength(6);
+      expect(state.stations.size).toBe(6);
 
       Object.keys(STATION_CONFIGS).forEach(stationId => {
         expect(getStations(state)[stationId]).toBeDefined();
@@ -235,7 +234,7 @@ describe('BagelTycoonEngine', () => {
       const state = engine.getState();
 
       // Should have all 6 stations initialized from defaults
-      expect(Object.keys(state.stations)).toHaveLength(6);
+      expect(state.stations.size).toBe(6);
 
       // Should preserve the partial state property
       expect(state.money).toBe(1000);
@@ -254,7 +253,7 @@ describe('BagelTycoonEngine', () => {
       const state = engine.getState();
 
       // Should have all 6 stations initialized from defaults
-      expect(Object.keys(state.stations)).toHaveLength(6);
+      expect(state.stations.size).toBe(6);
 
       // Should preserve the partial state property
       expect(state.customerQueue).toEqual(['😀', '😎']);

@@ -26,6 +26,9 @@ next_task:
   type: feature
   id: BT-012
 recent_bugs:
+  - id: BUG-002
+    issue: "getState() Returns Object Instead of Map for Stations"
+    fix: "Modified getState() to preserve Map type when cloning, preventing runtime errors in React components"
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
