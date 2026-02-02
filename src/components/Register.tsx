@@ -15,6 +15,8 @@ interface RegisterProps {
   money: number;
   onTakeOrder: () => void;
   onAutomateRegister: () => void;
+  hasSecondRegister?: boolean;
+  onAddSecondRegister?: () => void;
 }
 
 const REGISTER_MANAGER_COST = BASE_COSTS.registerManager;
@@ -25,6 +27,8 @@ export function Register({
   money,
   onTakeOrder,
   onAutomateRegister,
+  hasSecondRegister,
+  onAddSecondRegister,
 }: RegisterProps) {
   const canAffordManager = money >= REGISTER_MANAGER_COST;
   const showAutomateButton = !hasRegisterManager;
@@ -57,8 +61,10 @@ export function Register({
         {/* Take Order Button */}
         <button
           onClick={onTakeOrder}
-          disabled={!canTakeOrder}
-          className="btn btn-primary w-full py-4 text-base font-bold uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!canTakeOrder || hasRegisterManager}
+          className={`btn btn-primary w-full ${
+            hasRegisterManager ? "py-2 text-sm" : "py-4 text-base"
+          } font-bold uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           Take Order
         </button>
@@ -71,6 +77,17 @@ export function Register({
             className="btn btn-secondary w-full py-3 text-sm font-bold uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed border-2 border-dashed border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100 active:scale-95 transition-transform"
           >
             Hire Register Manager (${REGISTER_MANAGER_COST})
+          </button>
+        )}
+
+        {/* Second Register Button (shown when automated and not yet purchased) */}
+        {hasRegisterManager && !hasSecondRegister && onAddSecondRegister && (
+          <button
+            onClick={onAddSecondRegister}
+            disabled={money < BASE_COSTS.secondRegister}
+            className="btn btn-outline w-full py-2 text-sm font-bold uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed border-2 border-slate-200 bg-white hover:bg-slate-50 active:scale-95 transition-transform"
+          >
+            Add Second Register (${BASE_COSTS.secondRegister})
           </button>
         )}
       </div>

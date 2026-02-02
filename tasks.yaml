@@ -56,4 +56,4 @@ epics:
           - "Once the register is automated, it should take orders without player input."
           - "The Take Order button should shrink and be disabled."
           - "The player should now have the ability to add a 2nd cash register below the first."
-        status: TODO
+        status: DONE

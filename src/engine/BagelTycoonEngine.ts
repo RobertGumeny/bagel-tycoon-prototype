@@ -8,28 +8,28 @@
 
 import type {
   GameState,
-  StationState,
   Order,
-  SaleRecord,
   Recipe,
-} from './types';
+  SaleRecord,
+  StationState,
+} from "./types";
 
 import {
-  STATION_CONFIGS,
-  STORAGE_CAPS,
-  UPGRADE_MULTIPLIER,
   BASE_COSTS,
   CUSTOMER_EMOJIS,
-  TIMING,
+  QUALITY_MULTIPLIER,
   RECIPES,
   SPEED_MULTIPLIER,
-  QUALITY_MULTIPLIER,
-} from './types';
+  STATION_CONFIGS,
+  STORAGE_CAPS,
+  TIMING,
+  UPGRADE_MULTIPLIER,
+} from "./types";
 
 /**
  * LocalStorage key for persisting game state
  */
-const SAVE_KEY = 'bagel-tycoon-save';
+const SAVE_KEY = "bagel-tycoon-save";
 
 /**
  * Type for state change subscribers
@@ -68,8 +68,8 @@ export class BagelTycoonEngine {
     this.start();
 
     // Set up auto-save on page unload
-    if (typeof window !== 'undefined') {
-      window.addEventListener('beforeunload', () => {
+    if (typeof window !== "undefined") {
+      window.addEventListener("beforeunload", () => {
         this.save();
       });
     }
@@ -79,7 +79,9 @@ export class BagelTycoonEngine {
    * Get singleton instance of the engine
    * Automatically loads from localStorage if no initial state provided
    */
-  public static getInstance(initialState?: Partial<GameState>): BagelTycoonEngine {
+  public static getInstance(
+    initialState?: Partial<GameState>,
+  ): BagelTycoonEngine {
     if (!BagelTycoonEngine.instance) {
       // Load from localStorage if no initial state provided
       const savedState = initialState ?? BagelTycoonEngine.load() ?? undefined;
@@ -123,7 +125,7 @@ export class BagelTycoonEngine {
    */
   private notify(): void {
     const readonlyState = this.getState();
-    this.subscribers.forEach(callback => callback(readonlyState));
+    this.subscribers.forEach((callback) => callback(readonlyState));
   }
 
   /**
@@ -133,7 +135,10 @@ export class BagelTycoonEngine {
     // Clone the stations Map while preserving Map type
     const clonedStations = new Map<string, StationState>();
     this.state.stations.forEach((station, key) => {
-      clonedStations.set(key, { ...station, unlockedIngredients: [...station.unlockedIngredients] });
+      clonedStations.set(key, {
+        ...station,
+        unlockedIngredients: [...station.unlockedIngredients],
+      });
     });
 
     // Return a deep clone to prevent external mutation
@@ -141,14 +146,18 @@ export class BagelTycoonEngine {
       ...this.state,
       stations: clonedStations,
       customerQueue: [...this.state.customerQueue],
-      salesHistory: this.state.salesHistory.map(sale => ({ ...sale })),
+      salesHistory: this.state.salesHistory.map((sale) => ({ ...sale })),
       prestigePerks: [...this.state.prestigePerks],
-      activeOrder: this.state.activeOrder ? {
-        ...this.state.activeOrder,
-        foodRecipe: { ...this.state.activeOrder.foodRecipe },
-        beverageRecipe: this.state.activeOrder.beverageRecipe ? { ...this.state.activeOrder.beverageRecipe } : undefined,
-        stationsInvolved: [...this.state.activeOrder.stationsInvolved],
-      } : null,
+      activeOrder: this.state.activeOrder
+        ? {
+            ...this.state.activeOrder,
+            foodRecipe: { ...this.state.activeOrder.foodRecipe },
+            beverageRecipe: this.state.activeOrder.beverageRecipe
+              ? { ...this.state.activeOrder.beverageRecipe }
+              : undefined,
+            stationsInvolved: [...this.state.activeOrder.stationsInvolved],
+          }
+        : null,
     } as Readonly<GameState>;
   }
 
@@ -163,7 +172,7 @@ export class BagelTycoonEngine {
     const stations = new Map<string, StationState>();
 
     // Initialize all stations from config
-    Object.values(STATION_CONFIGS).forEach(config => {
+    Object.values(STATION_CONFIGS).forEach((config) => {
       const isFree = config.unlockCost === 0;
       stations.set(config.id, {
         id: config.id,
@@ -200,9 +209,9 @@ export class BagelTycoonEngine {
 
     // Only convert if partial.stations exists, otherwise use defaults
     const stations = partial.stations
-      ? (partial.stations instanceof Map
-          ? partial.stations
-          : new Map(Object.entries(partial.stations) as [string, StationState][]))
+      ? partial.stations instanceof Map
+        ? partial.stations
+        : new Map(Object.entries(partial.stations) as [string, StationState][])
       : defaults.stations;
 
     return {
@@ -242,7 +251,9 @@ export class BagelTycoonEngine {
 
     // Check funds
     if (this.state.money < config.unlockCost) {
-      console.warn(`Insufficient funds to unlock ${stationId}. Need $${config.unlockCost}, have $${this.state.money}`);
+      console.warn(
+        `Insufficient funds to unlock ${stationId}. Need $${config.unlockCost}, have $${this.state.money}`,
+      );
       return false;
     }
 
@@ -263,7 +274,7 @@ export class BagelTycoonEngine {
    */
   public upgradeStation(
     stationId: string,
-    upgradeType: 'equipment' | 'quality' | 'storage'
+    upgradeType: "equipment" | "quality" | "storage",
   ): boolean {
     const station = this.state.stations.get(stationId);
     if (!station) {
@@ -280,15 +291,19 @@ export class BagelTycoonEngine {
     let canUpgrade = true;
 
     switch (upgradeType) {
-      case 'equipment': {
-        cost = BASE_COSTS.equipment * Math.pow(UPGRADE_MULTIPLIER, station.equipmentLevel);
+      case "equipment": {
+        cost =
+          BASE_COSTS.equipment *
+          Math.pow(UPGRADE_MULTIPLIER, station.equipmentLevel);
         break;
       }
-      case 'quality': {
-        cost = BASE_COSTS.quality * Math.pow(UPGRADE_MULTIPLIER, station.qualityLevel);
+      case "quality": {
+        cost =
+          BASE_COSTS.quality *
+          Math.pow(UPGRADE_MULTIPLIER, station.qualityLevel);
         break;
       }
-      case 'storage': {
+      case "storage": {
         if (station.storageLevel >= 3) {
           console.warn(`Storage already at max level for ${stationId}`);
           canUpgrade = false;
@@ -307,7 +322,9 @@ export class BagelTycoonEngine {
 
     // Check funds
     if (this.state.money < cost) {
-      console.warn(`Insufficient funds for ${upgradeType} upgrade. Need $${cost}, have $${this.state.money}`);
+      console.warn(
+        `Insufficient funds for ${upgradeType} upgrade. Need $${cost}, have $${this.state.money}`,
+      );
       return false;
     }
 
@@ -315,13 +332,13 @@ export class BagelTycoonEngine {
     this.state.money -= cost;
 
     switch (upgradeType) {
-      case 'equipment':
+      case "equipment":
         station.equipmentLevel += 1;
         break;
-      case 'quality':
+      case "quality":
         station.qualityLevel += 1;
         break;
-      case 'storage':
+      case "storage":
         station.storageLevel += 1;
         break;
     }
@@ -354,7 +371,9 @@ export class BagelTycoonEngine {
 
     // Check funds
     if (this.state.money < BASE_COSTS.manager) {
-      console.warn(`Insufficient funds to hire manager. Need $${BASE_COSTS.manager}, have $${this.state.money}`);
+      console.warn(
+        `Insufficient funds to hire manager. Need $${BASE_COSTS.manager}, have $${this.state.money}`,
+      );
       return false;
     }
 
@@ -394,7 +413,7 @@ export class BagelTycoonEngine {
 
     // Find next ingredient to unlock
     const nextIngredient = config.availableIngredients.find(
-      ing => !station.unlockedIngredients.includes(ing)
+      (ing) => !station.unlockedIngredients.includes(ing),
     );
 
     if (!nextIngredient) {
@@ -404,7 +423,9 @@ export class BagelTycoonEngine {
 
     // Check funds
     if (this.state.money < BASE_COSTS.ingredient) {
-      console.warn(`Insufficient funds to add ingredient. Need $${BASE_COSTS.ingredient}, have $${this.state.money}`);
+      console.warn(
+        `Insufficient funds to add ingredient. Need $${BASE_COSTS.ingredient}, have $${this.state.money}`,
+      );
       return false;
     }
 
@@ -426,13 +447,15 @@ export class BagelTycoonEngine {
    */
   public automateRegister(): boolean {
     if (this.state.hasRegisterManager) {
-      console.warn('Register already automated');
+      console.warn("Register already automated");
       return false;
     }
 
     // Check funds
     if (this.state.money < BASE_COSTS.registerManager) {
-      console.warn(`Insufficient funds for register manager. Need $${BASE_COSTS.registerManager}, have $${this.state.money}`);
+      console.warn(
+        `Insufficient funds for register manager. Need $${BASE_COSTS.registerManager}, have $${this.state.money}`,
+      );
       return false;
     }
 
@@ -450,18 +473,20 @@ export class BagelTycoonEngine {
    */
   public addSecondRegister(): boolean {
     if (!this.state.hasRegisterManager) {
-      console.warn('Must automate first register before adding second');
+      console.warn("Must automate first register before adding second");
       return false;
     }
 
     if (this.state.hasSecondRegister) {
-      console.warn('Second register already purchased');
+      console.warn("Second register already purchased");
       return false;
     }
 
     // Check funds
     if (this.state.money < BASE_COSTS.secondRegister) {
-      console.warn(`Insufficient funds for second register. Need $${BASE_COSTS.secondRegister}, have $${this.state.money}`);
+      console.warn(
+        `Insufficient funds for second register. Need $${BASE_COSTS.secondRegister}, have $${this.state.money}`,
+      );
       return false;
     }
 
@@ -479,7 +504,7 @@ export class BagelTycoonEngine {
    */
   public enableCustomerSpawning(): void {
     if (this.customerSpawningEnabled) {
-      console.warn('Customer spawning already enabled');
+      console.warn("Customer spawning already enabled");
       return;
     }
 
@@ -492,7 +517,9 @@ export class BagelTycoonEngine {
     // Reset last spawn time to now to ensure proper timing
     this.state.lastCustomerSpawn = now;
 
-    console.log(`Customer spawning enabled. First customer will arrive in ${TIMING.firstCustomerDelay}ms`);
+    console.log(
+      `Customer spawning enabled. First customer will arrive in ${TIMING.firstCustomerDelay}ms`,
+    );
   }
 
   // ============================================================================
@@ -507,13 +534,13 @@ export class BagelTycoonEngine {
   public takeOrder(): boolean {
     // Check if queue has customers
     if (this.state.customerQueue.length === 0) {
-      console.warn('No customers in queue');
+      console.warn("No customers in queue");
       return false;
     }
 
     // Check if order already active
     if (this.state.activeOrder !== null) {
-      console.warn('Order already in progress');
+      console.warn("Order already in progress");
       return false;
     }
 
@@ -527,7 +554,7 @@ export class BagelTycoonEngine {
     const order = this.generateOrder(customer);
 
     if (!order) {
-      console.warn('No available recipes to fulfill order');
+      console.warn("No available recipes to fulfill order");
       // Put customer back in queue if no recipes available
       this.state.customerQueue.unshift(customer);
       return false;
@@ -548,7 +575,7 @@ export class BagelTycoonEngine {
    */
   public start(): void {
     if (this.isRunning) {
-      console.warn('Game loop already running');
+      console.warn("Game loop already running");
       return;
     }
 
@@ -563,7 +590,7 @@ export class BagelTycoonEngine {
       this.tick(deltaTime);
     }, TIMING.tickInterval);
 
-    console.log('Game loop started');
+    console.log("Game loop started");
   }
 
   /**
@@ -582,7 +609,7 @@ export class BagelTycoonEngine {
     this.isRunning = false;
     this.save();
 
-    console.log('Game loop stopped');
+    console.log("Game loop stopped");
   }
 
   /**
@@ -606,7 +633,10 @@ export class BagelTycoonEngine {
         // Otherwise, skip spawning until first customer delay passes
       } else {
         // Normal spawning logic: spawn customers every 5 seconds
-        if (now - this.state.lastCustomerSpawn >= TIMING.customerSpawnInterval) {
+        if (
+          now - this.state.lastCustomerSpawn >=
+          TIMING.customerSpawnInterval
+        ) {
           this.spawnCustomer();
           this.state.lastCustomerSpawn = now;
         }
@@ -614,6 +644,15 @@ export class BagelTycoonEngine {
     }
 
     // Update active order progress
+    // If register is automated, automatically take orders when possible
+    if (
+      this.state.hasRegisterManager &&
+      this.state.activeOrder === null &&
+      this.state.customerQueue.length > 0
+    ) {
+      this.takeOrder();
+    }
+
     if (this.state.activeOrder) {
       this.state.activeOrder.remainingTime -= deltaTime;
 
@@ -641,11 +680,11 @@ export class BagelTycoonEngine {
    */
   private generateOrder(customerName: string): Order | null {
     // Filter food recipes by unlocked status
-    const availableFoodRecipes = RECIPES.filter(recipe => {
-      if (recipe.category !== 'food') return false;
+    const availableFoodRecipes = RECIPES.filter((recipe) => {
+      if (recipe.category !== "food") return false;
 
       // Check if all required stations are unlocked
-      const allStationsUnlocked = recipe.requiredStations.every(stationId => {
+      const allStationsUnlocked = recipe.requiredStations.every((stationId) => {
         const station = this.state.stations.get(stationId);
         return station?.unlocked ?? false;
       });
@@ -653,16 +692,18 @@ export class BagelTycoonEngine {
       if (!allStationsUnlocked) return false;
 
       // Check if all required ingredients are unlocked
-      const allIngredientsUnlocked = recipe.requiredIngredients.every(ingredientId => {
-        // Find which station(s) have this ingredient
-        for (const stationId of recipe.requiredStations) {
-          const station = this.state.stations.get(stationId);
-          if (station?.unlockedIngredients.includes(ingredientId)) {
-            return true;
+      const allIngredientsUnlocked = recipe.requiredIngredients.every(
+        (ingredientId) => {
+          // Find which station(s) have this ingredient
+          for (const stationId of recipe.requiredStations) {
+            const station = this.state.stations.get(stationId);
+            if (station?.unlockedIngredients.includes(ingredientId)) {
+              return true;
+            }
           }
-        }
-        return false;
-      });
+          return false;
+        },
+      );
 
       return allIngredientsUnlocked;
     });
@@ -673,32 +714,34 @@ export class BagelTycoonEngine {
     }
 
     // Randomly select a food recipe
-    const foodRecipe = availableFoodRecipes[
-      Math.floor(Math.random() * availableFoodRecipes.length)
-    ];
+    const foodRecipe =
+      availableFoodRecipes[
+        Math.floor(Math.random() * availableFoodRecipes.length)
+      ];
 
     // Check if beverages station is unlocked
-    const beveragesStation = this.state.stations.get('beverages');
-    let beverageRecipe: typeof RECIPES[number] | undefined = undefined;
+    const beveragesStation = this.state.stations.get("beverages");
+    let beverageRecipe: (typeof RECIPES)[number] | undefined = undefined;
 
     if (beveragesStation?.unlocked) {
       // 60% chance to add a beverage
       if (Math.random() < 0.6) {
         // Filter available beverage recipes
-        const availableBeverages = RECIPES.filter(recipe => {
-          if (recipe.category !== 'beverage') return false;
+        const availableBeverages = RECIPES.filter((recipe) => {
+          if (recipe.category !== "beverage") return false;
 
           // Check if all required ingredients are unlocked
-          return recipe.requiredIngredients.every(ingredientId =>
-            beveragesStation.unlockedIngredients.includes(ingredientId)
+          return recipe.requiredIngredients.every((ingredientId) =>
+            beveragesStation.unlockedIngredients.includes(ingredientId),
           );
         });
 
         // Select random beverage if any available
         if (availableBeverages.length > 0) {
-          beverageRecipe = availableBeverages[
-            Math.floor(Math.random() * availableBeverages.length)
-          ];
+          beverageRecipe =
+            availableBeverages[
+              Math.floor(Math.random() * availableBeverages.length)
+            ];
         }
       }
     }
@@ -712,7 +755,10 @@ export class BagelTycoonEngine {
     ];
 
     // Calculate processing time with speed multipliers and parallel/series logic (BT-007)
-    const totalTime = this.calculateOrderProcessingTime(foodRecipe, beverageRecipe);
+    const totalTime = this.calculateOrderProcessingTime(
+      foodRecipe,
+      beverageRecipe,
+    );
 
     // Create order with unique ID
     this.orderCounter++;
@@ -746,29 +792,35 @@ export class BagelTycoonEngine {
    */
   private calculateOrderProcessingTime(
     foodRecipe: Recipe,
-    beverageRecipe?: Recipe
+    beverageRecipe?: Recipe,
   ): number {
     // Calculate processing time for the food recipe at each station
-    const foodStationTimes: number[] = foodRecipe.requiredStations.map(stationId => {
-      const station = this.state.stations.get(stationId);
-      if (!station) return foodRecipe.baseTime;
+    const foodStationTimes: number[] = foodRecipe.requiredStations.map(
+      (stationId) => {
+        const station = this.state.stations.get(stationId);
+        if (!station) return foodRecipe.baseTime;
 
-      // Apply speed multiplier: baseTime / (1 + (level - 1) * 0.25)
-      const speedMultiplier = 1 + (station.equipmentLevel - 1) * SPEED_MULTIPLIER;
-      return foodRecipe.baseTime / speedMultiplier;
-    });
+        // Apply speed multiplier: baseTime / (1 + (level - 1) * 0.25)
+        const speedMultiplier =
+          1 + (station.equipmentLevel - 1) * SPEED_MULTIPLIER;
+        return foodRecipe.baseTime / speedMultiplier;
+      },
+    );
 
     // Calculate processing time for the beverage recipe if present
     let beverageStationTimes: number[] = [];
     if (beverageRecipe) {
-      beverageStationTimes = beverageRecipe.requiredStations.map(stationId => {
-        const station = this.state.stations.get(stationId);
-        if (!station) return beverageRecipe.baseTime;
+      beverageStationTimes = beverageRecipe.requiredStations.map(
+        (stationId) => {
+          const station = this.state.stations.get(stationId);
+          if (!station) return beverageRecipe.baseTime;
 
-        // Apply speed multiplier
-        const speedMultiplier = 1 + (station.equipmentLevel - 1) * SPEED_MULTIPLIER;
-        return beverageRecipe.baseTime / speedMultiplier;
-      });
+          // Apply speed multiplier
+          const speedMultiplier =
+            1 + (station.equipmentLevel - 1) * SPEED_MULTIPLIER;
+          return beverageRecipe.baseTime / speedMultiplier;
+        },
+      );
     }
 
     // Get all unique stations involved in the entire order
@@ -780,7 +832,7 @@ export class BagelTycoonEngine {
     ];
 
     // Check if all stations have managers
-    const allHaveManagers = allStations.every(stationId => {
+    const allHaveManagers = allStations.every((stationId) => {
       const station = this.state.stations.get(stationId);
       return station?.hasManager ?? false;
     });
@@ -809,11 +861,12 @@ export class BagelTycoonEngine {
     const order = this.state.activeOrder;
 
     // Calculate base price (food + beverage if present)
-    const basePrice = order.foodRecipe.basePrice + (order.beverageRecipe?.basePrice ?? 0);
+    const basePrice =
+      order.foodRecipe.basePrice + (order.beverageRecipe?.basePrice ?? 0);
 
     // Calculate quality multiplier: 1 + sum((stationQuality - 1) * 0.12) for all used stations
     let qualityBonus = 1;
-    order.stationsInvolved.forEach(stationId => {
+    order.stationsInvolved.forEach((stationId) => {
       const station = this.state.stations.get(stationId);
       if (station) {
         qualityBonus += (station.qualityLevel - 1) * QUALITY_MULTIPLIER;
@@ -826,20 +879,20 @@ export class BagelTycoonEngine {
 
     // Calculate speed bonus based on actual vs base time
     let speedMultiplier: number;
-    let speedLabel: 'lightning' | 'good' | 'normal' | 'slow';
+    let speedLabel: "lightning" | "good" | "normal" | "slow";
 
     if (actualTime < baseTime * 0.5) {
       speedMultiplier = 1.5;
-      speedLabel = 'lightning';
+      speedLabel = "lightning";
     } else if (actualTime < baseTime * 1.0) {
       speedMultiplier = 1.2;
-      speedLabel = 'good';
+      speedLabel = "good";
     } else if (actualTime < baseTime * 2.0) {
       speedMultiplier = 1.0;
-      speedLabel = 'normal';
+      speedLabel = "normal";
     } else {
       speedMultiplier = 0.7;
-      speedLabel = 'slow';
+      speedLabel = "slow";
     }
 
     // Calculate final price
@@ -866,7 +919,9 @@ export class BagelTycoonEngine {
     // Clear active order
     this.state.activeOrder = null;
 
-    console.log(`Order completed: ${orderName}, earned $${finalPrice.toFixed(2)} (Quality: ${qualityBonus.toFixed(2)}x, Speed: ${speedLabel})`);
+    console.log(
+      `Order completed: ${orderName}, earned $${finalPrice.toFixed(2)} (Quality: ${qualityBonus.toFixed(2)}x, Speed: ${speedLabel})`,
+    );
   }
 
   /**
@@ -900,9 +955,9 @@ export class BagelTycoonEngine {
       };
 
       localStorage.setItem(SAVE_KEY, JSON.stringify(serializedState));
-      console.log('Game saved successfully');
+      console.log("Game saved successfully");
     } catch (error) {
-      console.error('Failed to save game:', error);
+      console.error("Failed to save game:", error);
     }
   }
 
@@ -914,21 +969,23 @@ export class BagelTycoonEngine {
     try {
       const saved = localStorage.getItem(SAVE_KEY);
       if (!saved) {
-        console.log('No saved game found');
+        console.log("No saved game found");
         return null;
       }
 
       const parsed = JSON.parse(saved);
 
       // Convert stations object back to Map
-      if (parsed.stations && typeof parsed.stations === 'object') {
-        parsed.stations = new Map(Object.entries(parsed.stations) as [string, StationState][]);
+      if (parsed.stations && typeof parsed.stations === "object") {
+        parsed.stations = new Map(
+          Object.entries(parsed.stations) as [string, StationState][],
+        );
       }
 
-      console.log('Game loaded successfully');
+      console.log("Game loaded successfully");
       return parsed;
     } catch (error) {
-      console.error('Failed to load game:', error);
+      console.error("Failed to load game:", error);
       return null;
     }
   }
@@ -939,9 +996,9 @@ export class BagelTycoonEngine {
   public static clearSave(): void {
     try {
       localStorage.removeItem(SAVE_KEY);
-      console.log('Saved game cleared');
+      console.log("Saved game cleared");
     } catch (error) {
-      console.error('Failed to clear save:', error);
+      console.error("Failed to clear save:", error);
     }
   }
 
@@ -956,7 +1013,7 @@ export class BagelTycoonEngine {
   public prestige(): boolean {
     // Implementation will be added in later tasks
     // This stub ensures the method exists for future implementation
-    console.warn('Prestige not yet implemented');
+    console.warn("Prestige not yet implemented");
     return false;
   }
 

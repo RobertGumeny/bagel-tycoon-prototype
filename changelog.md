@@ -10,6 +10,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added - 2026-02-01
 
+#### BT-017: Register Automation Fix
+
+- Register now automatically takes orders when automated (manager hired).
+- 'Take Order' button shrinks and is disabled when register automation is active.
+- Added UI to purchase a second cash register below the first; includes engine support for buying a second register.
+- Integrated automation with game loop to auto-take orders when queue contains customers and no active order.
+
 #### BT-014: Lucide Icon Integration & Button Styling
 
 - Added station-specific Lucide icons to enhance visual identity and affordance
