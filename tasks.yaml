@@ -1,7 +1,7 @@
 epics:
   - id: EPIC-4
     title: "Playtest Refinements & POS Polish"
-    status: TODO
+    status: IN-PROGRESS
     tasks:
       - id: BT-012
         title: "Cash Register Station & Order Automation"
@@ -11,7 +11,7 @@ epics:
           - "Move the 'Take Order' button from the Header to this new Register component."
           - "Implement the 'Register Manager' ($250) purchase button within this component."
           - "Visuals: Style with a dashed border if unautomated, solid POS-card style once a manager is hired."
-        status: TODO
+        status: DONE
 
       - id: BT-013
         title: "Queue Spawning Fix & Delay"
