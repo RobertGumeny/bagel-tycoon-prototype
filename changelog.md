@@ -10,6 +10,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added - 2026-02-01
 
+#### BT-013: Queue Spawning Fix & Delay
+
+- Fixed queue spawning to start with empty queue and gradual customer arrival
+- Added customer spawning control system with manual enable trigger
+- Implemented 3-second first customer delay to prevent overwhelming new players
+- Added `enableCustomerSpawning()` public method for UI to trigger spawning after mount
+- Modified `tick()` method to respect spawning enabled flag and first customer delay
+- Updated App.tsx to call `enableCustomerSpawning()` in useEffect after component mount
+- Added `firstCustomerDelay: 3000` constant to TIMING configuration
+- Customer spawning now controlled by two-stage process:
+  - Stage 1: Wait 3 seconds after enableCustomerSpawning() is called
+  - Stage 2: First customer spawns, then regular 5-second intervals resume
+- Updated all 9 customer spawning tests to account for new behavior:
+  - Tests now call `enableCustomerSpawning()` before advancing timers
+  - First customer spawns at 3 seconds, subsequent customers at 5-second intervals
+  - Added new test verifying customers don't spawn until spawning is enabled
+  - Added test for first customer delay timing
+
+**Technical Details:**
+
+- Added `customerSpawningEnabled` boolean flag (default: false)
+- Added `firstCustomerSpawnTime` nullable timestamp for tracking initial delay
+- Engine constructor no longer starts spawning automatically
+- Spawning begins only when UI explicitly calls `enableCustomerSpawning()`
+- First customer spawns after TIMING.firstCustomerDelay (3000ms)
+- Subsequent customers maintain regular 5-second interval (TIMING.customerSpawnInterval)
+- Prevents instant queue filling from loaded save states
+
+**Testing:**
+
+- ✅ All 136 unit tests passing (118 engine + 9 spawning + 9 Register)
+- ✅ TypeScript compilation successful
+- ✅ ESLint passes with no errors or warnings
+- ✅ Build successful (229.27 KB bundle)
+- ✅ Empty queue on game start verified
+- ✅ First customer delay properly enforced
+- ✅ Regular spawning intervals resume after first customer
+
 #### BT-012: Cash Register Station & Order Automation
 
 - Created Register component positioned below ActiveOrder display
