@@ -16,6 +16,9 @@ active_systems:
     "Pricing & Bonuses",
   ]
 known_issues: []
+next_task:
+  type: feature
+  id: BT-009
 recent_bugs:
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"

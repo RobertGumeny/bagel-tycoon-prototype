@@ -40,6 +40,6 @@ Before declaring an epic complete or moving to a new epic, explicitly verify tha
 
 ## FOR ALL TASKS AND STEPS:
 
-- IF you encounter any bugs that directly impact your ability to complete a task, stop and generate a BUG_REPORT.md by copying BUG_REPORT_TEMPLATE.md and outlining what the bug was, where it was encountered, your assessment of the best fix, the impacted task, and any files that were impacted by the bug. To get the ID for the bug, look at recent_bugs in `project-state.yaml`.
+- IF you encounter any bugs that directly impact your ability to complete a task, stop and generate a BUG_REPORT.md by copying BUG_REPORT_TEMPLATE.md and outlining what the bug was, where it was encountered, your assessment of the best fix, the impacted task, and any files that were impacted by the bug. To get the ID for the bug, look at recent_bugs in `project-state.yaml` and increment. Once you have generated a bug report, set the next_task in `project-state.yaml` to type: bug and provide the ID of the new bug.
 
 - When building the project, always use npm run build. If that command fails continually, generate a FAILURE_REPORT.md.
