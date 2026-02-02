@@ -10,6 +10,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added - 2026-02-01
 
+#### BT-009: POS Layout & Shell
+
+- Installed and configured Tailwind CSS 4 with custom theme
+- Created 2-column POS-style layout component (33% sidebar, 66% main)
+- Implemented Header component with:
+  - Logo display (🥯 emoji in rounded amber box)
+  - "BAGEL TYCOON" title with amber accent on "TYCOON"
+  - Random tagline selection from PRD pool on component mount
+  - Real-time money counter with tabular numerals for consistent formatting
+- Integrated BagelTycoonEngine with React using subscription pattern
+- Updated App.tsx to manage engine state and render new UI components
+- Configured Tailwind 4 with custom station colors and design system tokens
+
 #### BT-006: Dynamic Order Generation
 
 - Implemented comprehensive recipe system with 27 unique recipes:

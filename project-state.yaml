@@ -1,8 +1,8 @@
 project_name: Bagel Tycoon
 version: 0.1.0
-current_epic: "EPIC-2: Core Simulation & Logic"
+current_epic: "EPIC-3: React UI Layer (POS Style)"
 last_update: "2026-02-01"
-technical_stack: ["React", "TypeScript", "Vite", "Tailwind", "Lucide React"]
+technical_stack: ["React", "TypeScript", "Vite", "Tailwind 4", "Lucide React"]
 active_systems:
   [
     "Type System",
@@ -14,13 +14,15 @@ active_systems:
     "Customer Spawning",
     "Order Processing",
     "Pricing & Bonuses",
+    "POS Layout",
+    "Header Component",
   ]
 known_issues: []
 next_task:
   type: feature
-  id: BT-009
+  id: BT-010
 recent_bugs:
   - id: BUG-001
     issue: "mergeWithDefaults Creates Empty Stations Map"
     fix: "Engine instances can now be created with partial state (e.g., `{ money: 1000 }`) without losing station initialization"
-memo_from_last_run: "BT-008 completed: Pricing and speed bonus logic fully implemented. Quality multiplier calculated from all stations involved (1 + sum((qualityLevel - 1) * 0.12)). Speed bonus tiers implemented: lightning (1.5x at <50% time), good (1.2x at <100%), normal (1.0x at <200%), slow (0.7x at ≥200%). Final price = basePrice * qualityMultiplier * speedBonus. Sales logged to history with all bonus details. Added 15 new tests. All 118 tests passing. EPIC-2 complete."
+memo_from_last_run: "BT-009 completed: POS Layout & Shell implemented with Tailwind 4. Created 2-column layout (33% sidebar, 66% main). Header component displays logo (🥯 emoji in rounded amber box), 'BAGEL TYCOON' title with amber accent, random tagline from PRD pool selected on mount, and real-time money counter with tabular numerals. Engine successfully integrated with React via subscription pattern. All 118 tests passing. No linter or build errors. EPIC-3 in progress."
