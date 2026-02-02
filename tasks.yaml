@@ -47,7 +47,7 @@ epics:
           - "Style the 'Add Ingredient' button as a tag matching existing ingredient dimensions."
           - "Use a dashed border, muted text, and a '+' prefix for the unlockable ingredient."
           - "Ensure the button correctly disables and greys out if 'Storage Level' capacity is reached."
-        status: TODO
+        status: DONE
 
       - id: BT-017
         title: "Register Automation Fix"
